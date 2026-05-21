@@ -3,26 +3,26 @@ Mensajes de conexión:
 // Cliente → Servidor (Rol: Jugador)
 {
   "type":      "JOIN",
-  "role":      "PLAYER",
+  "role":      "JUGADOR",
   "player_id": "P1"
 }
 // Servidor → Cliente (confirmación)(Rol: Jugador)
 {
   "type":      "JOIN_ACK",
-  "role":      "PLAYER",
+  "role":      "JUGADOR",
   "player_id": "P1",
   "cannon_x":  400
 }
 // Cliente → Servidor (Rol: Espectador)
 {
   "type":         "JOIN",
-  "role":         "SPECTATOR",
+  "role":         "ESPECTADOR",
   "watch_player": "P1"
 }
 // Servidor → Cliente (confirmación)(Rol: Espectador)
 {
   "type":     "JOIN_ACK",
-  "role":     "SPECTATOR",
+  "role":     "ESPECTADOR",
   "watching": "P1"
 }
  
@@ -94,10 +94,10 @@ GAME_STATE:
 }
 Nota: El campo player es un objeto singular, no un array. Cada GameEngine solo conoce a su propio jugador.
 Descripción de campos:
-Campo         |	Tipo	| Descripción
-player        |	objeto  | Estado del jugador: cannon_x, lives, score
-aliens        |	array	| Lista de aliens activos con su posición y puntos
-bullets       |	array	| Balas en vuelo, tanto del jugador como de aliens
+Campo        |	Tipo	| Descripción
+player          |	objeto        | Estado del jugador: cannon_x, lives, score
+aliens          |	array	| Lista de aliens activos con su posición y puntos
+bullets        |	array	| Balas en vuelo, tanto del jugador como de aliens
 ufo	          | objeto 	| Estado del OVNI, active=false si no está en pantalla
 bunkers	      | array	| 4 bunkers con su porcentaje de salud (0-100)
 wave	      | int	    |Número de oleada actual
