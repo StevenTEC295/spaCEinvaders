@@ -25,6 +25,6 @@ public class Bala {
     public int getY(){return y;}
     public int getId(){return id;}
     public String getOwner(){return owner;}
-    public boolean getState(){return activo;}
+    
     
 }
