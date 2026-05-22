@@ -81,7 +81,7 @@ GAME_STATE:
     { "id": 1, "x": 320, "y": 450, "owner": "player" },
     { "id": 2, "x": 180, "y": 200, "owner": "alien"  }
   ],
-  "ufo": { "active": true, "x": 620, "direction": "R-L", "points": 150 },
+  "ufo": { "active": true, "x": 620, "points": 150 },
   "bunkers": [
     { "id": 1, "x": 150, "health": 100 },
     { "id": 2, "x": 300, "health": 75  },
@@ -89,7 +89,6 @@ GAME_STATE:
     { "id": 4, "x": 600, "health": 0   }
   ],
   "wave":         2,
-  "alien_speed":  120,
   "game_status":  "RUNNING"
 }
 Nota: El campo player es un objeto singular, no un array. Cada GameEngine solo conoce a su propio jugador.
