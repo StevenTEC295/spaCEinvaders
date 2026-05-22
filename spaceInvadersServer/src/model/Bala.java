@@ -1,5 +1,5 @@
 
-package spaceinvadersserver.model;
+package model;
 
 public class Bala {
     private int id, x, y;
@@ -20,7 +20,7 @@ public class Bala {
     }
     public boolean isFueraAlcance(){return y<0 || y>600;}
     public void desactivar(){this.activo = false;}
-    
+    public boolean isActivo(){return activo;}
     public int getX(){return x;}
     public int getY(){return y;}
     public int getId(){return id;}

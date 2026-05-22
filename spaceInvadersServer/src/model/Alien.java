@@ -1,5 +1,5 @@
 
-package spaceinvadersserver.model;
+package model;
 
 public abstract class Alien {
     protected int id;

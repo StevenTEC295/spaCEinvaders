@@ -1,5 +1,5 @@
 
-package spaceinvadersserver.model;
+package model;
 
 public class Jugador {
     private String jugadorId;

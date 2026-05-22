@@ -1,5 +1,5 @@
 
-package spaceinvadersserver.model;
+package model;
 import java.util.Random;
 public class UFO {    
     protected int x, y;
