@@ -1,0 +1,29 @@
+{ 
+  "type": "GAME_STATE", 
+  "player": { 
+    "player_id": "P1", 
+    "cannon_x":  320, 
+    "lives":     3, 
+    "score":     450 
+  }, 
+  "aliens": [ 
+    { "id": 1, "x": 4, "y": 1, "type": "octopus", "points": 40 }, 
+    { "id": 2, "x": 6, "y": 1, "type": "octopus", "points": 40 }, 
+    { "id": 3, "x": 4, "y": 2, "type": "crab",    "points": 20 }, 
+    { "id": 4, "x": 6, "y": 2, "type": "crab",    "points": 20 }, 
+    { "id": 5, "x": 4, "y": 3, "type": "squid",   "points": 10 } 
+  ], 
+  "bullets": [ 
+    { "id": 1, "x": 320, "y": 450, "owner": "player" }, 
+    { "id": 2, "x": 180, "y": 200, "owner": "alien"  } 
+  ], 
+  "ufo": { "active": true, "x": 620, "points": 150 }, 
+  "bunkers": [ 
+    { "id": 1, "x": 150, "health": 100 }, 
+    { "id": 2, "x": 300, "health": 70  }, 
+    { "id": 3, "x": 450, "health": 40  }, 
+    { "id": 4, "x": 600, "health": 0   } 
+  ], 
+  "wave":         2, 
+  "game_status":  "RUNNING" 
+}

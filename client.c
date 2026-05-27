@@ -73,7 +73,7 @@ int main() {
     // =====================================================
 
     const char* join_msg =
-        "{\"type\":\"JOIN\",\"player_name\":\"JugadorWindows\"}\n";
+        "{\"type\":\"JOIN\",\"player_name\":\"Jugador1\"}\n";
 
     send(sock, join_msg, (int)strlen(join_msg), 0);
 

@@ -38,11 +38,15 @@ game_state = {
     "game_status": "RUNNING"
 }
 
+
 alien_x = 3
 direction = 1
 
+
+
 try:
     while True:
+        
         # mover aliens para simular movimiento real
         alien_x += direction
         if alien_x >= 8 or alien_x <= 0:
@@ -70,7 +74,9 @@ try:
         except BlockingIOError:
             pass
         conn.setblocking(True)
+        
 
+        # Envia los datos
         conn.sendall((json.dumps(game_state) + "\n").encode())
         time.sleep(0.1)
 
