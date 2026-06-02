@@ -38,7 +38,7 @@ public class GameEngine extends Thread {
         this.running = true;
         this.alienDirection = 1;
         this.tickCount = 0;
-        this.alienMovEach = 8;
+        this.alienMovEach = 4;
         
         
     }
@@ -71,7 +71,7 @@ public class GameEngine extends Thread {
 
         boolean hitWall = aliens.stream()
                 .filter(Alien::isVivo)
-                .anyMatch(a -> a.getX() >= 10 || a.getX() <= 0);
+                .anyMatch(a -> (a.getX() >= 13 && alienDirection == 1) || (a.getX() <= 0 && alienDirection == -1));
 
         if (hitWall) {
             aliens.stream().filter(Alien::isVivo)
