@@ -26,15 +26,17 @@ game_state = {
         {"id": 2, "x": 5, "y": 1, "type": "octopus", "points": 40},
         {"id": 3, "x": 3, "y": 2, "type": "crab",    "points": 20},
         {"id": 4, "x": 5, "y": 2, "type": "squid",   "points": 10}
+    ], 
+  "bullets": [ 
+    { "id": 1, "x": 320, "y": 450, "owner": "player" }, 
+    { "id": 2, "x": 180, "y": 200, "owner": "alien"  } 
     ],
-    "bullets":    [],
     "bunkers":    [
         {"id": 1, "x": 150, "health": 100},
         {"id": 2, "x": 300, "health": 100}
     ],
-    "ufo":        {"active": False, "x": 0, "direction": "L-R", "points": 0},
+    "ufo":        {"active": False, "x": 0, "points": 0},
     "wave":       1,
-    "alien_speed": 120,
     "game_status": "RUNNING"
 }
 
@@ -78,7 +80,7 @@ try:
 
         # Envia los datos
         conn.sendall((json.dumps(game_state) + "\n").encode())
-        time.sleep(0.1)
+        time.sleep(1)
 
 except (BrokenPipeError, ConnectionResetError):
     print("Cliente desconectado")
