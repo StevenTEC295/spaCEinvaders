@@ -11,6 +11,5 @@ public interface JuegoObserver {
     void onGameWon(int wave, int finalScore);
     void onWaveStart(int wave, int alienCount, int alienSpeed);
     void onWaveClear(int wave);
-    void onUfoSpawn(String direction, int x);
     void onUfoKilled(int points, int newScore);
 }

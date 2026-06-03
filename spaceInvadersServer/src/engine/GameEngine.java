@@ -24,21 +24,30 @@ public class GameEngine extends Thread {
     private int velocidad;
     private volatile boolean running;
     private int alienDirection;
+    private int ufoDirection;
     private int tickCount;        
-    private int alienMovEach;     
+    private int alienMovEach;  
+    private int ufoMovEach;
+    private int ufoTickCount;
+    // agregar con los demás campos al inicio de la clase
+    private int alienShootEach = 15; // dispara cada 15 ticks
+    private int alienShootTick = 0;
     public GameEngine(String jugadorId){
         this.jugador = new Jugador(jugadorId, 400);
         this.aliens = AlienFactory.createWave(1);
         this.bunkers = Bunker.createDefault();
         this.balas = new ArrayList<>();
         this.observers  = new ArrayList<>(); 
-        this.ufo = new UFO();
+        this.ufo = null;
         this.wave=1;
-        this.velocidad = 120;
+        this.velocidad = 500;
         this.running = true;
         this.alienDirection = 1;
+        this.ufoDirection = 1;
         this.tickCount = 0;
-        this.alienMovEach = 4;
+        this.alienMovEach =8;
+        this.ufoTickCount = 0;
+        this.ufoMovEach = 4;
         
         
     }
@@ -60,6 +69,7 @@ public class GameEngine extends Thread {
         moveAliens();
         moveBalas();
         updateUFO();
+        alienesDisparan();
     }
     
     
@@ -82,7 +92,7 @@ public class GameEngine extends Thread {
                     .forEach(a -> a.setX(a.getX() + alienDirection));
         }
     }
-
+    
     
     private void moveBalas(){
         balas.forEach(Bala::mover);
@@ -92,7 +102,8 @@ public class GameEngine extends Thread {
     
     private void updateUFO() {
         // Si no existe, posibilidad de aparecer
-        if (ufo.isVivo()) {
+        if (ufo == null) {
+            
             double chance = Math.random();
             // 1% de probabilidad por update
             if (chance < 0.01) {
@@ -100,15 +111,37 @@ public class GameEngine extends Thread {
                 ufo = new UFO();
                 ufo.setX(0);
                 ufo.setY(1);
+                System.out.println("Se creo UFO");
             }
             return;
         }
+        else{
+        
+        ufoTickCount++;
+        if (ufoTickCount < ufoMovEach) return; // no mover todavía
+        ufoTickCount = 0;  
         // mover UFO
-        ufo.setX(ufo.getX() + 1);
+        if(ufoDirection ==1){
+            ufo.setX(ufo.getX() + 1);
+            System.out.println("UFO se movió 1 posición");
+        }
+        else{
+            ufo.setX(ufo.getX()-1);
+        }
 
         // eliminar si sale de pantalla
         if (ufo.getX() > 20) {
             ufo.matar();
+            ufo = null;
+            System.out.println("El UFO se eliminó");
+            this.ufoDirection = -1;
+        }
+        else if(ufo.getX() < 0){
+            ufo.matar();
+            ufo = null;
+            System.out.println("El UFO se eliminó");
+            this.ufoDirection = 1;
+        }
         }
     }
     private void checkCollisions(){
@@ -140,13 +173,14 @@ public class GameEngine extends Thread {
         
         }
     } 
-    if (ufo.isVivo()){
+    if (ufo != null){
         for(Bala b:balasJugador){
             if (overlapsUFO(b,ufo)){
                 ufo.matar();
                 b.desactivar();
                 jugador.agregarPuntos(ufo.getPuntos());
                 notifyUFOMuerto(ufo.getPuntos(), jugador.getPuntos());
+                ufo = null;
             }
         }
     }
@@ -160,7 +194,7 @@ public class GameEngine extends Thread {
             }
         }
     }
-    boolean overlapsFondo = aliens.stream().filter(Alien::isVivo).anyMatch(a -> a.getY() >= 10);
+    boolean overlapsFondo = aliens.stream().filter(Alien::isVivo).anyMatch(a -> a.getY() >= 20);
 
         if (overlapsFondo) {
             running = false;
@@ -169,13 +203,13 @@ public class GameEngine extends Thread {
     for (Bala b : balas) {
 
             if (!b.isActivo()) continue;
-
             for (Bunker bunker : bunkers) {
 
                 if (bunker.isActive() && overlapsBunker(b, bunker)) {
 
                     bunker.impacto();
                     b.desactivar();
+                    notifyBunkerHit(bunker.getID(), bunker.getHealth());
 
                     if (bunker.getHealth() <= 0) {
                         bunker.deactivate();
@@ -184,6 +218,27 @@ public class GameEngine extends Thread {
             }
         }
     }
+    private void alienesDisparan() {
+    alienShootTick++;
+    if (alienShootTick < alienShootEach) return;
+    alienShootTick = 0;
+
+    // filtrar aliens vivos
+    List<Alien> vivos = aliens.stream()
+            .filter(Alien::isVivo)
+            .collect(Collectors.toList());
+
+    if (vivos.isEmpty()) return;
+
+    // elegir uno al azar
+    Alien tirador = vivos.get((int)(Math.random() * vivos.size()));
+
+    // crear bala desde la posición del alien
+    int id = balas.size() + 1;
+    int bx = tirador.getX() * 32 + 14; // centro del alien
+    int by = tirador.getY() * 32 + 28; // parte inferior del alien
+    balas.add(new Bala(id, bx, by, "alien"));
+}
     
     
     
@@ -196,6 +251,10 @@ public class GameEngine extends Thread {
             wave++;
             aliens    = AlienFactory.createWave(wave);
             velocidad     = Math.max(40, velocidad - 10); // se acelera cada oleada
+        }
+        if (wave >= 3){
+            notifyGameWon(wave, jugador.getPuntos());
+            running = false;
         }
     }
 
@@ -254,11 +313,18 @@ public synchronized void shoot() {
         observers.forEach(o -> o.onPlayerHit(vidas, cannonX));
     }
     private void notifyUFOMuerto(int ufoPts, int jugadorPts) {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        observers.forEach(o-> o.onUfoKilled(ufoPts, jugadorPts));
+    }
+    private void notifyBunkerHit(int id, int health) {
+        observers.forEach(o-> o.onBunkerHit(id, health));
     }
 
     private void notifyGameOver(String reason, int puntos) {
         observers.forEach(o -> o.onGameOver(reason, puntos));
+    }
+    
+    private void notifyGameWon(int wave, int puntos) {
+        observers.forEach(o->o.onGameWon(wave, puntos));
     }
     public synchronized void addObserver(JuegoObserver o) { observers.add(o); }
     public synchronized void removeObserver(JuegoObserver o) { observers.remove(o); }
@@ -276,7 +342,10 @@ public synchronized void shoot() {
         s.ufo        = this.ufo;
         s.wave       = this.wave;
         s.alienSpeed = this.velocidad;
-        s.status     = running ? "FINISHED" : "RUNNING";
+        s.status     = running ? "RUNNING" : "FINISHED";
         return s;
     }   
+
+
+    
 }

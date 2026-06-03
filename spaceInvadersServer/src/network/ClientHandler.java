@@ -116,7 +116,7 @@ public class ClientHandler extends Thread implements JuegoObserver{
 
     @Override
     public void onBunkerHit(int bunkerId, int health) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        send(String.format("{\"type\":\"BUNKER_HIT\",\"bunker_id\":%d,\"health\":%d}", bunkerId, health));
     }
 
     @Override
@@ -137,7 +137,10 @@ public class ClientHandler extends Thread implements JuegoObserver{
 
     @Override
     public void onWaveStart(int wave, int alienCount, int alienSpeed) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        send(String.format(
+                "{\"type\":\"WAVE__START\",\"wave\":%d,\"alien_count\":%d,\"alienspeed\":%d}",
+                wave, alienCount, alienSpeed
+        ));
     }
 
     @Override
@@ -145,15 +148,16 @@ public class ClientHandler extends Thread implements JuegoObserver{
         send(String.format("{\"type\":\"WAVE_CLEAR\",\"wave\":%d}", wave));
     }
 
-    @Override
-    public void onUfoSpawn(String direction, int x) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    
 
     @Override
     public void onUfoKilled(int points, int newScore) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        send(String.format(
+                "{\"type\":\"UFO_KILLED\",\"points\":%d,\"new_score\":%d}",
+                points, newScore
+        ));
     }
+    
     private synchronized void send(String json) {
         if (out != null) out.println(json);
     }

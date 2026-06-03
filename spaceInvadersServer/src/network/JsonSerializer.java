@@ -14,7 +14,7 @@ public class JsonSerializer {
         StringBuilder sb = new StringBuilder();
         sb.append("{\"type\":\"GAME_STATE\",");
 
-        // player
+        // jugador
         sb.append(String.format(
             "\"jugador\":{\"jugadorID\":\"%s\",\"cannon_x\":%d,\"vidas\":%d,\"score\":%d},",
             s.jugador.getJugadorId(), s.jugador.getCannonX(),
@@ -32,7 +32,7 @@ public class JsonSerializer {
             .collect(Collectors.toList());
         sb.append(String.join(",", alienList)).append("],");
 
-        // bullets
+        // balas
         sb.append("\"balas\":[");
         List<String> bulletList = s.balas.stream()
             .filter(Bala::isActivo)
@@ -42,7 +42,14 @@ public class JsonSerializer {
             ))
             .collect(Collectors.toList());
         sb.append(String.join(",", bulletList)).append("],");
-
+        // ufo
+        if (s.ufo != null){
+            sb.append(String.format(
+            "\"ufo\":{\"activo\":\"%s\",\"x\":%d,\"points\":%d},",
+            s.ufo.isVivo(), s.ufo.getX(), s.ufo.getPuntos()
+        ));
+        }else{sb.append(String.format("\"ufo\":{},"));}
+        
         // bunkers
         sb.append("\"bunkers\":[");
         List<String> bunkerList = s.bunkers.stream()

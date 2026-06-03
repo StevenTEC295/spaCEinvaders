@@ -18,7 +18,7 @@ public class UFO {
     public int getY(){ return y; }
     public int getPuntos(){ return puntos; }
     public boolean isVivo(){ return vivo; }
-    public void setX(int x){this.y = y;}
-    public void setY(int y){this.x = x;}
+    public void setX(int x){this.x = x;}
+    public void setY(int y){this.y = y;}
 
 }
