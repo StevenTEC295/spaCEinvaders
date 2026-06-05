@@ -344,7 +344,11 @@ public synchronized void shoot() {
         s.alienSpeed = this.velocidad;
         s.status     = running ? "RUNNING" : "FINISHED";
         return s;
-    }   
+    }  
+    // GameEngine.java — agregar este método
+    public synchronized void detener() {
+    this.running = false;
+}
 
 
     

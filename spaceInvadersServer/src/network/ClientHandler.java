@@ -43,7 +43,7 @@ public class ClientHandler extends Thread implements JuegoObserver{
         }catch (IOException e){
                     System.out.println("Cliente desconectado: " + jugadorID);}
             finally{
-                    if (engine != null) engine.removeObserver((JuegoObserver) this);
+                    if (engine != null) engine.detener(); engine.removeObserver((JuegoObserver) this);
                         try {socket.close();}catch (IOException ignored){}
                         }
     
@@ -54,9 +54,11 @@ public class ClientHandler extends Thread implements JuegoObserver{
         // parsear con org.json o gson
         JSONObject obj = new JSONObject(json);
         this.role = obj.getString("role");
-
+        System.out.println(this.role);
+        
         if (role.equals("JUGADOR")) {
             this.jugadorID = obj.getString("jugador_id");
+            System.out.println(this.jugadorID);
             this.engine   = new GameEngine(jugadorID);
             engines.put(jugadorID, engine);
             engine.addObserver(this);
@@ -86,7 +88,7 @@ public class ClientHandler extends Thread implements JuegoObserver{
     private void handleJugadorMessage(String json) {
         JSONObject obj = new JSONObject(json);
         String type    = obj.getString("type");
-
+        System.out.println("Mensaje cliente: "+type);
         switch (type) {
             case "MOVE"  -> engine.moverJugador(obj.getString("direction"));
             case "SHOOT" -> engine.shoot();

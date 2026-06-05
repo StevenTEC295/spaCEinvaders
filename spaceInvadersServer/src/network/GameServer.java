@@ -5,6 +5,8 @@ package network;
 
 import engine.GameEngine;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
@@ -23,6 +25,13 @@ public class GameServer {
     public void start() throws IOException {
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Servidor escuchando en puerto " + port);
+        NetworkInterface.getNetworkInterfaces().asIterator().forEachRemaining(ni -> {
+        ni.getInetAddresses().asIterator().forEachRemaining(addr -> {
+            if (!addr.isLoopbackAddress() && addr instanceof Inet4Address) {
+                System.out.println("IP para conectarse: " + addr.getHostAddress());
+            }
+        });
+    });
 
         while (true) {
             Socket client = serverSocket.accept();

@@ -16,7 +16,7 @@ public class JsonSerializer {
 
         // jugador
         sb.append(String.format(
-            "\"jugador\":{\"jugadorID\":\"%s\",\"cannon_x\":%d,\"vidas\":%d,\"score\":%d},",
+            "\"jugador\":{\"jugador_id\":\"%s\",\"cannon_x\":%d,\"vidas\":%d,\"score\":%d},",
             s.jugador.getJugadorId(), s.jugador.getCannonX(),
             s.jugador.getVidas(),    s.jugador.getPuntos()
         ));
@@ -45,9 +45,9 @@ public class JsonSerializer {
         // ufo
         if (s.ufo != null){
             sb.append(String.format(
-            "\"ufo\":{\"activo\":\"%s\",\"x\":%d,\"points\":%d},",
-            s.ufo.isVivo(), s.ufo.getX(), s.ufo.getPuntos()
-        ));
+    "\"ufo\":{\"activo\":%b,\"x\":%d,\"points\":%d},",
+    s.ufo.isVivo(), s.ufo.getX(), s.ufo.getPuntos()
+));
         }else{sb.append(String.format("\"ufo\":{},"));}
         
         // bunkers
@@ -62,7 +62,7 @@ public class JsonSerializer {
 
         // metadata
         sb.append(String.format(
-            "\"wave\":%d,\"alien_speed\":%d,\"game_status\":\"%s\"}",
+            "\"wave\":%d,\"alien_speed\":%d,\"game_status\":\"%s\"}\n",
             s.wave, s.alienSpeed, s.status
         ));
 
