@@ -1,0 +1,16 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#define SERVER_IP "172.20.10.2"
+#define SERVER_PORT 8080
+
+#define BUFFER_SIZE 4096
+#define SCREEN_WIDTH 1200
+#define SCREEN_HEIGHT 900
+
+#define NUM_BUNKERS 10
+
+#define ALIEN_SPACING_X 64
+#define ALIEN_SPACING_Y 48
+
+#endif

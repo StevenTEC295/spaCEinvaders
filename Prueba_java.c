@@ -9,13 +9,16 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#include <windows.h>
+#include <process.h>
+
 #include "raylib.h"
 #include "cJSON.h"
 #include "structs.h"
 
 //"127.0.0.1" Prueba
 //"172.20.10.2" Para el Java Server
-#define SERVER_IP "127.0.0.1"
+#define SERVER_IP "172.20.10.2"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 4096
 
@@ -23,6 +26,16 @@
 #define SCREEN_HEIGHT 900
 
 #define NUM_BUNKERS 10
+#define ALIEN_SPACING_X 64
+#define ALIEN_SPACING_Y 48
+
+
+GameState game = {0};
+
+CRITICAL_SECTION gameLock;
+
+volatile int running = 1;
+
 
 // ================= UI STATE =================
 typedef enum {
@@ -31,6 +44,7 @@ typedef enum {
     GAME_SPECTATOR
 } AppState;
 
+/*
 // ================= FREE LIST =================
 void free_alien_list(AlienNode* head) {
     while (head) {
@@ -38,54 +52,44 @@ void free_alien_list(AlienNode* head) {
         head = head->next;
         free(tmp);
     }
-}
+}*/
 
 //================================================
 // ================= PARSER JSON =================
 //================================================
 void process_message(const char* raw_json, GameState* state) {
-
-    //Convierte el texto en un árbol de datos CJSON
+    printf("msj del server  %s\n", raw_json);
     cJSON* root = cJSON_Parse(raw_json);
-    //Mensaje de error en caso de no parsear correctamente
+    //if (!root) return;
     if (!root)
     {
-        printf("\nERROR AL PARSEAR JSON:\n");
+        printf("\nERROR PARSEANDO JSON:\n");
         printf("%s\n", cJSON_GetErrorPtr());
         return;
     }
 
-    //Busca "type" en el JSON 
     cJSON* type = cJSON_GetObjectItem(root, "type");
-
-    //Validar que "type" exista y que sea una cadena
     if (!type || !type->valuestring) {
         cJSON_Delete(root);
         return;
     }
 
-    // Procesar el mensaje de JSON de "GAME_STATE"
     if (strcmp(type->valuestring, "GAME_STATE") == 0) {
 
         // ---------------- PLAYER ----------------
-        //Busca el objeto "player"
-        cJSON* player = cJSON_GetObjectItem(root, "player");
+        cJSON* player = cJSON_GetObjectItem(root, "jugador");
         
         if (player) {
-            //Busca y copia el ID del jugador a los structs (MAX 9 caracteres)
-            cJSON* id = cJSON_GetObjectItem(player, "player_id");
+            cJSON* id = cJSON_GetObjectItem(player, "jugador_id");
             if (id && id->valuestring)
                 strncpy(state->player.player_id, id->valuestring, 9);
-            
-            //Busca y designa la ubicación del cañon del jugador en valores numéricos a los structs
+
             cJSON* cannon = cJSON_GetObjectItem(player, "cannon_x");
             if (cannon) state->player.cannon_x = cannon->valueint;
-            
-            //Busca y designa la cantidad de vidas del jugador en valores numéricos a los structs
-            cJSON* lives = cJSON_GetObjectItem(player, "lives");
+
+            cJSON* lives = cJSON_GetObjectItem(player, "vidas");
             if (lives) state->player.lives = lives->valueint;
 
-            //Busca y designa el puntaje del jugador en valores numéricos a los structs
             cJSON* score = cJSON_GetObjectItem(player, "score");
             if (score) state->player.score = score->valueint;
         }
@@ -93,144 +97,101 @@ void process_message(const char* raw_json, GameState* state) {
 
         // ---------------- ALIENS (LISTA ENLAZADA) ----------------
 
-        //Busca el objeto "aliens"
         cJSON* aliens = cJSON_GetObjectItem(root, "aliens");
 
-        //Borra la lista anterior. Liberar nodos de listas anteriores (Quita acumulación de memoria)
         free_alien_list(state->aliens);
         state->aliens = NULL;
-    
+
         if (aliens) {
             cJSON* alien;
-
-            //Recorre array de aliens
             cJSON_ArrayForEach(alien, aliens) {
 
-                //Reservar memoria a un alien del array
                 AlienNode* node = malloc(sizeof(AlienNode));
-                
+
                 cJSON* id = cJSON_GetObjectItem(alien, "id");
                 cJSON* x  = cJSON_GetObjectItem(alien, "x");
                 cJSON* y  = cJSON_GetObjectItem(alien, "y");
-                cJSON* pts = cJSON_GetObjectItem(alien, "pts");
-                
-                //Designa todos los atributos a los structs, da 0 si están vacíos
+                cJSON* pts = cJSON_GetObjectItem(alien, "points");
+
                 node->id  = id ? id->valueint : 0;
                 node->x   = x  ? x->valueint  : 0;
                 node->y   = y  ? y->valueint  : 0;
                 node->pts = pts? pts->valueint: 0;
                 
-                //Verifica el tipo de alien
+                // verifica el tipo de alien
                 cJSON* t = cJSON_GetObjectItem(alien, "type");
                 if (t && t->valuestring)
                 {
-                    if (strcmp(t->valuestring, "crab") == 0)
+                    if (strcmp(t->valuestring, "cangrejo") == 0)
                         node->alienType = ALIEN_CRAB;
 
-                    else if (strcmp(t->valuestring, "octopus") == 0)
+                    else if (strcmp(t->valuestring, "pulpo") == 0)
                         node->alienType = ALIEN_OCTOPUS;
 
-                    else if (strcmp(t->valuestring, "squid") == 0)
+                    else if (strcmp(t->valuestring, "calamar") == 0)
                         node->alienType = ALIEN_SQUID;
 
                     else
                         node->alienType = ALIEN_UNKNOWN;
                 }
 
-                //Inserta alien en el array (Inserta al inicio de lista)
                 node->next = state->aliens;
                 state->aliens = node;
             }
         }
 
         // ---------------- BULLETS ----------------
-        //Busca el objeto "bullets"
-        cJSON* bullets = cJSON_GetObjectItem(root, "bullets");
-        //Contador de balas 
+        cJSON* bullets = cJSON_GetObjectItem(root, "balas");
         state->bullet_count = 0;
 
         if (bullets) {
             cJSON* b;
-            
-            //Recorre array de balas
             cJSON_ArrayForEach(b, bullets) {
-                //Termina el recorrido una vez que se alcanza el limite
                 if (state->bullet_count >= 100) break;
 
-                //Designa todos los atributos a los structs (x,y)
-                cJSON* x = cJSON_GetObjectItem(b, "x");
-                cJSON* y = cJSON_GetObjectItem(b, "y");
-
-                if (!cJSON_IsNumber(x) || !cJSON_IsNumber(y))
-                    continue;
-
-                int idx = state->bullet_count;
-
-                state->bullets[idx].x = x->valueint;
-                state->bullets[idx].y = y->valueint;
-                
-                state->bullets[idx].owner[0] = '\0';
-                //Designa todos los atributos a los structs (owner)
-                cJSON* owner = cJSON_GetObjectItem(b, "owner");
-                
-
-                if (cJSON_IsString(owner) && owner->valuestring)
-                {
-                    strncpy(state->bullets[idx].owner,owner->valuestring,
-                        sizeof(state->bullets[idx].owner) - 1);
-
-                    state->bullets[idx].owner[sizeof(state->bullets[idx].owner) - 1] = '\0';
-                }
-                //Incrementa el contador 
+                state->bullets[state->bullet_count].x = cJSON_GetObjectItem(b, "x")->valueint;
+                state->bullets[state->bullet_count].y = cJSON_GetObjectItem(b, "y")->valueint;
+                if (b && b->valuestring)
+                    strncpy(state->bullets->owner, b->valuestring, 9);
                 state->bullet_count++;
+
             }
         }
 
         // ---------------- BUNKERS ----------------
-        //Busca el objeto "bunkers"
         cJSON* bunkers = cJSON_GetObjectItem(root, "bunkers");
-        //Contador de bunkers
         state->bunker_count = 0;
 
         if (bunkers) {
             cJSON* b;
             cJSON_ArrayForEach(b, bunkers) {
-                //Termina el recorrido una vez que se alcanza el limite
                 if (state->bunker_count >= 4) break;
-                
-                //Designa todos los atributos a los structs
+
                 state->bunkers[state->bunker_count].id = cJSON_GetObjectItem(b, "id")->valueint;
                 state->bunkers[state->bunker_count].x = cJSON_GetObjectItem(b, "x")->valueint;
                 state->bunkers[state->bunker_count].health = cJSON_GetObjectItem(b, "health")->valueint;
 
-                //Incrementa el contador 
                 state->bunker_count++;
             }
         }
 
         // ---------------- UFO ----------------
-        //Busca el objeto "ufo"
         cJSON* ufo = cJSON_GetObjectItem(root, "ufo");
         if (ufo) {
-            //Designa todos los atributos a los structs
-            state->ufo.active = cJSON_GetObjectItem(ufo, "active")->valueint;
+            state->ufo.active = cJSON_GetObjectItem(ufo, "activo")->valueint;
             state->ufo.x      = cJSON_GetObjectItem(ufo, "x")->valueint;
             state->ufo.points = cJSON_GetObjectItem(ufo, "points")->valueint;
         }
 
         // ---------------- GAME META ----------------
-        //Busca el objeto "wave"
         cJSON* wave = cJSON_GetObjectItem(root, "wave");
-        //Designa el valor númerico de la oleada a los structs
         if (wave) state->wave = wave->valueint;
 
-        //Busca el objeto "game_status"
         cJSON* status = cJSON_GetObjectItem(root, "game_status");
-        //Designa el string de estado del juego a los structs
         if (status && status->valuestring)
             strncpy(state->game_status, status->valuestring, 19);
     }
-    //Libera el árbol JSON (Liberar memoria reservada)
+
     cJSON_Delete(root);
 }
 
@@ -262,8 +223,8 @@ void DrawAliens(AlienNode* aliens,int frame,Texture2D crab1,Texture2D crab2,Text
 
         DrawTexture(
             texture,
-            current->x,
-            current->y,
+            current->x* ALIEN_SPACING_X,
+            current->y * ALIEN_SPACING_Y,
             WHITE
         );
 
@@ -297,40 +258,74 @@ void DrawBunkers(GameState* game, Texture2D bunkerTextures[])
     }
 }
 
-//================================================
-//============FUNCIÓN DIBUJAR BALAS ============
-//================================================
-void DrawBullets(GameState* game, Texture2D playerBullet, Texture2D alienBullet)
-{
-    for (int i = 0; i < game->bullet_count; i++)
-    {
-        Bullet* b = &game->bullets[i];
-
-        Texture2D tex;
-
-        // Filtro según dueño
-        if (strcmp(b->owner, "player") == 0 || strcmp(b->owner, "P1") == 0)
-        {
-            tex = playerBullet;
-        }
-        else
-        {
-            tex = alienBullet;
-        }
-
-        DrawTexture(tex, b->x, b->y, WHITE);
-    }
-}
-
 // ================= INPUT ================= 
 void handle_input(SOCKET sock, int role)
 {
     if (role != 1) return;
 
     if (IsKeyPressed(KEY_SPACE)) {
-        const char* msg = "{\"type\":\"SHOOT\"}\n";
+        const char* msg = "{\"type\":\"SHOOT\"}";
         send(sock, msg, (int)strlen(msg), 0);
     }
+}
+
+
+unsigned __stdcall ReceiveThread(void* arg)
+{
+    SOCKET sock = *(SOCKET*)arg;
+
+    char buffer[BUFFER_SIZE];
+
+    while (running)
+    {
+        int bytes = recv(sock, buffer, BUFFER_SIZE - 1, 0);
+
+        if (bytes > 0)
+        {
+            buffer[bytes] = '\0';
+
+            printf("\n===== MENSAJE RECIBIDO =====\n");
+            printf("%s\n", buffer);
+            printf("============================\n");
+
+            EnterCriticalSection(&gameLock);
+            
+            char recvBuffer[16384];
+            int recvLen = 0;
+            //process_message(buffer, &game);
+            /*printf(
+                "Jugador X=%d  vidas=%d  score=%d\n",
+                game.player.cannon_x,
+                game.player.lives,
+                game.player.score
+            );*/
+            printf("RECIBIDOS %d BYTES\n", bytes);
+            printf("%s\n", buffer);
+
+            LeaveCriticalSection(&gameLock);
+        }
+        else if (bytes == 0)
+        {
+            printf("Servidor desconectado\n");
+            running = 0;
+            break;
+        }
+        else
+        {
+            int err = WSAGetLastError();
+
+            if (err != WSAEWOULDBLOCK)
+            {
+                printf("Socket error: %d\n", err);
+                running = 0;
+                break;
+            }
+
+            Sleep(1);
+        }
+    }
+
+    return 0;
 }
 
 // ================= MAIN =================
@@ -369,10 +364,6 @@ int main() {
     //OVNI
     Texture2D Img_Ovni    = LoadTexture("Assets/Ovni.png");
 
-    //Balas 
-    Texture2D Img_alien_bullet = LoadTexture("Assets/Alien_bullet.png");
-    Texture2D Img_player_bullet = LoadTexture("Assets/Player_bullet.png");
-
     // ================= SOCKET =================
     WSADATA wsa;
     SOCKET sock;
@@ -396,10 +387,22 @@ int main() {
     }
 
     printf("Conectado\n");
+    InitializeCriticalSection(&gameLock);
 
+    
     // NON-BLOCKING SOCKET
     u_long mode = 1;
     ioctlsocket(sock, FIONBIO, &mode);
+
+    HANDLE recvThread =
+    (HANDLE)_beginthreadex(
+        NULL,
+        0,
+        ReceiveThread,
+        &sock,
+        0,
+        NULL
+    );
 
     // ================= STATE =================
     AppState state = MENU;
@@ -407,10 +410,10 @@ int main() {
     int joined = 0;
 
     char buffer[BUFFER_SIZE];
-    GameState game = {0};
+    //GameState game = {0};
 
     // ================= LOOP =================
-    while (!WindowShouldClose()) {
+    while (running && !WindowShouldClose()) {
 
         //Temporizador para la animación de los aliens
         alienTimer += GetFrameTime();
@@ -470,26 +473,11 @@ int main() {
 
             //if (role == 1)
             if (role == 1)
-                send(sock, "{\"type\":\"JOIN\",\"role\":\"JUGADOR\",\"jugador_id\":\"P1\"}", 53, 0);
+                send(sock, "{\"type\":\"JOIN\",\"role\":\"JUGADOR\",\"jugador_id\":\"P2\"}\n", 55, 0);
             else
                 send(sock, "{\"type\":\"JOIN\",\"player_name\":\"Espectador\"}\n", 50, 0);
 
             joined = 1;
-        }
-
-        // ================= RECEIVE =================
-        int bytes = recv(sock, buffer, BUFFER_SIZE - 1, 0);
-
-        if (bytes > 0) {
-            buffer[bytes] = '\0';
-            process_message(buffer, &game);
-            printf("Mensaje recibido:\n%s\n", buffer);
-        }
-        else if (bytes == SOCKET_ERROR) {
-            int err = WSAGetLastError();
-            if (err != WSAEWOULDBLOCK) {
-                printf("Socket error: %d\n", err);
-            }
         }
 
         // ================= INPUT ================= 
@@ -501,12 +489,21 @@ int main() {
 
         // ================= UI =================
         if (state == GAME_PLAYER) {
-            DrawText("MODO JUGADOR", SCREEN_WIDTH/2, 10, 20, WHITE);
+
+            EnterCriticalSection(&gameLock);
+
+            // leer copia local (IMPORTANTE)
+            GameState localGame = game;
+
+            LeaveCriticalSection(&gameLock);
+
+            DrawText("MODO JUGADOR", SCREEN_WIDTH/2, 20, 20, WHITE);
             
             //Bunker
             DrawBunkers(&game, bunkerTextures);
 
             //Jugador
+            DrawText(TextFormat("X=%d", game.player.cannon_x),20,20,30,YELLOW);
             DrawTexture(Img_Player,game.player.cannon_x,SCREEN_HEIGHT-(Img_Player.height*1.5),WHITE);
 
             //Aliens
@@ -517,8 +514,7 @@ int main() {
             { 
                 DrawTexture(Img_Ovni,game.ufo.x,80,WHITE);
             }
-            //Balas
-            DrawBullets(&game, Img_player_bullet, Img_alien_bullet);
+            LeaveCriticalSection(&gameLock);
         }
 
         if (state == GAME_SPECTATOR) {
@@ -530,6 +526,11 @@ int main() {
 
     // ================= CLEANUP =================
     shutdown(sock, SD_BOTH);
+    running = 0;
+    shutdown(sock, SD_BOTH);
+    WaitForSingleObject(recvThread, INFINITE);
+    CloseHandle(recvThread);
+    DeleteCriticalSection(&gameLock);
     closesocket(sock);
     WSACleanup();
     UnloadTexture(Img_Player);
@@ -539,8 +540,6 @@ int main() {
     UnloadTexture(Img_Squid2);
     UnloadTexture(Img_Octopus1);
     UnloadTexture(Img_Octopus2);
-    UnloadTexture(Img_alien_bullet);
-    UnloadTexture(Img_player_bullet);
     // lOOP para quitar las imagenes de los bunkers
     for (int i = 0; i < NUM_BUNKERS; i++) 
         {

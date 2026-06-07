@@ -1,3 +1,5 @@
+#ifndef STRUCTS_H
+#define STRUCTS_H
 #include <stdbool.h>
 // ---------------- PLAYER ----------------
 typedef struct {
@@ -11,17 +13,27 @@ typedef struct {
 } Spectator;
 
 // ---------------- ALIEN (LISTA ENLAZADA) ----------------
+typedef enum //Tipos de aliens
+{
+    ALIEN_CRAB,
+    ALIEN_OCTOPUS,
+    ALIEN_SQUID,
+    ALIEN_UNKNOWN
+} AlienType;
+
 typedef struct AlienNode {
     int id, x, y, pts;
-    char type[16];
+    AlienType alienType;
     struct AlienNode* next;    // lista enlazada
 } AlienNode;
+
 
 
 // ---------------- BULLET ----------------
 typedef struct {
     int x, y;
-    bool active;
+    //bool active;
+    char owner[10];
 } Bullet;
 
 // ---------------- BUNKER ----------------
@@ -49,4 +61,6 @@ typedef struct {
     char game_status[20];
 
 } GameState;
+
+#endif
 
