@@ -9,6 +9,7 @@ print("Esperando cliente C...")
 conn, addr = server.accept()
 print(f"Cliente conectado: {addr}")
 
+"""
 # leer el JOIN del cliente
 data = conn.recv(1024).decode()
 print(f"Recibido: {data}")
@@ -16,6 +17,7 @@ print(f"Recibido: {data}")
 # responder con JOIN_ACK
 ack = {"type": "JOIN_ACK", "role": "PLAYER", "player_id": "P1", "cannon_x": 400}
 conn.sendall((json.dumps(ack) + "\n").encode())
+"""
 
 # mandar GAME_STATE cada 100ms
 game_state = {

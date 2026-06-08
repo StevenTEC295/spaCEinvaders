@@ -10,8 +10,8 @@
 #include <ws2tcpip.h>
 
 #include "raylib.h"
-#include "cJSON.h"
-#include "structs.h"
+#include "include/cJSON.h"
+#include "include/structs.h"
 
 //"127.0.0.1" Prueba
 //"172.20.10.2" Para el Java Server
@@ -374,22 +374,32 @@ int main() {
     Texture2D Img_player_bullet = LoadTexture("Assets/Player_bullet.png");
 
     // ================= SOCKET =================
-    WSADATA wsa;
-    SOCKET sock;
-    struct sockaddr_in server_addr;
+    //Declarar variables
+    WSADATA wsa; //almacena info
+    SOCKET sock; //Socket
+    struct sockaddr_in server_addr; //Dirección IPv4
 
+    //Inicializa Winsock
     if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
         printf("WSAStartup fallo\n");
         return 1;
     }
 
+    //Crear Socket
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    //Verificación de creación de Socket
     if (sock == INVALID_SOCKET) return 1;
 
+    //==Configuración== 
+    //Dirección de servidor
     server_addr.sin_family = AF_INET;
+    //Puerto
     server_addr.sin_port = htons(SERVER_PORT);
+    //Dirección IP
     inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr);
 
+    //Conexión al servidor
     if (connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
         printf("Error connect\n");
         return 1;
@@ -397,7 +407,7 @@ int main() {
 
     printf("Conectado\n");
 
-    // NON-BLOCKING SOCKET
+    //Socket no bloqueante (Evitar que el juego se bloquee esperando mensajes)
     u_long mode = 1;
     ioctlsocket(sock, FIONBIO, &mode);
 

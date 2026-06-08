@@ -62,5 +62,12 @@ typedef struct {
 
 } GameState;
 
+// -----------------Shared State----------------
+typedef struct {
+    char buffer[4096];
+    int has_new_data;
+} SharedState;
+
+
 #endif
 
