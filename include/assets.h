@@ -10,6 +10,7 @@ typedef struct {
     Texture2D bullets[2]; //Cantidad de .PNGs de bullets
     Texture2D UFO;
     Texture2D bunkers[10]; //Cantidad de .PNGs de Bunkers
+    Texture2D Lives;
 } Assets;
 
 bool LoadAssets(Assets *assets);

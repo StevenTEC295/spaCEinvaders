@@ -11,4 +11,6 @@ void DrawAliens(AlienNode* aliens, int frame, Assets *assets);
 void DrawUFO (GameState* game, Assets *assets);
 void DrawBullets(GameState* game, Assets *assets);
 void DrawPlayer (GameState* game, Assets *assets, float ScreenHeight);
+void DrawScore(GameState* game);
+void DrawLives(GameState* game, Assets *assets, float ScreenWidth);
 #endif

@@ -5,6 +5,7 @@ bool LoadAssets(Assets *assets)
 {
     assets->player = LoadTexture("Assets/Ship.png");
     assets->UFO = LoadTexture("Assets/Ovni.png");
+    assets->Lives = LoadTexture("Assets/Lives.png");
     assets->bunkers[0] = LoadTexture("Assets/Barrier.png");
     assets->bunkers[1] = LoadTexture("Assets/Barrier90.png");
     assets->bunkers[2] = LoadTexture("Assets/Barrier80.png");
@@ -31,6 +32,7 @@ void UnloadAssets(Assets *assets)
 {
     UnloadTexture(assets->player);
     UnloadTexture(assets->UFO);
+    UnloadTexture(assets->Lives);
     // lOOP para quitar las imagenes de los bunkers y aliens
     for (int i = 0; i < 10; i++) 
     {

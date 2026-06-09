@@ -176,6 +176,7 @@ void process_message(const char* raw_json, GameState* state) {
                 //Designa todos los atributos a los structs
                 state->bunkers[state->bunker_count].id = cJSON_GetObjectItem(b, "id")->valueint;
                 state->bunkers[state->bunker_count].x = cJSON_GetObjectItem(b, "x")->valueint;
+                state->bunkers[state->bunker_count].y = cJSON_GetObjectItem(b, "y")->valueint;
                 state->bunkers[state->bunker_count].health = cJSON_GetObjectItem(b, "health")->valueint;
 
                 //Incrementa el contador 

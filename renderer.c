@@ -64,7 +64,7 @@ void DrawBunkers(GameState* game, Assets *assets, float ScreenWidth, float Scree
         DrawTexture(
             assets->bunkers[index],
             game->bunkers[i].x,
-            ScreenHeight-200, 
+            ScreenHeight-250, 
             WHITE
         );
     }
@@ -111,6 +111,40 @@ void DrawUFO (GameState* game, Assets *assets){
 void DrawPlayer (GameState* game, Assets *assets, float ScreenHeight){
     DrawTexture(assets->player,game->player.cannon_x,ScreenHeight-((assets->player.height)*1.5),WHITE);
 }
+
+//================================================
+//============FUNCIÓN DIBUJAR PUNTAJE ============
+//================================================
+void DrawScore(GameState* game){
+    // Texto
+    DrawText(TextFormat("SCORE: %i", (int)game->player.score), 10, 10, 30, WHITE);
+}
+
+//================================================
+//============FUNCIÓN DIBUJAR VIDAS ==============
+//================================================
+void DrawLives(GameState* game, Assets *assets, float ScreenWidth){
+    // Variables
+    float x = ScreenWidth-(ScreenWidth/4);
+    float y = 10;
+    float size = 80;
+    // Texto
+    DrawText(("LIVES: "), x-60, y, 30, WHITE);
+    
+    //Dibuja las imagenes de las vidas
+    for (int i = 0; i < game->player.lives; i++)
+    {
+
+        DrawTexture(
+            assets->Lives,
+            x + (i * size) + 50,
+            y, 
+            WHITE
+        );
+    }
+
+}
+
 //================================================
 //============FUNCIÓN DIBUJAR MENÚ ===============
 //================================================
@@ -120,16 +154,20 @@ void DrawMenu(AppState *state, UIEvent *role, float ScreenWidth, float ScreenHei
 
         ClearBackground(BLACK);
 
-        DrawText("SELECCIONA MODO", 240, 100, 30, WHITE);
+        DrawText("SELECCIONA MODO", (ScreenWidth/2)-225, 100, 30, WHITE);
+        
+        // +60 +100
+        Rectangle btn1 = {(ScreenWidth/2)-200, (ScreenHeight/2)-60, 200, 60};
+        // = +100 del 1
+        Rectangle btn2 = {(ScreenWidth/2)-200, (ScreenHeight/2)+40, 200, 60};
 
-        Rectangle btn1 = {300, 200, 200, 60};
-        Rectangle btn2 = {300, 300, 200, 60};
-
+        //+50 +20 del boton 1
         DrawRectangleRec(btn1, DARKBLUE);
-        DrawText("JUGADOR", 350, 220, 20, WHITE);
+        DrawText("JUGADOR", (ScreenWidth/2)-175, (ScreenHeight/2)-40, 20, WHITE);
 
+        //+30 +20 del boton 2
         DrawRectangleRec(btn2, DARKGRAY);
-        DrawText("ESPECTADOR", 330, 320, 20, WHITE);
+        DrawText("ESPECTADOR", (ScreenWidth/2)-170, (ScreenHeight/2)+60, 20, WHITE);
 
         Vector2 m = GetMousePosition();
 
@@ -160,12 +198,15 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
 
         case GAME_PLAYER:
             ClearBackground(DARKBLUE);
-            DrawText("MODO JUGADOR", ScreenWidth/2, 10, 20, WHITE);
+            DrawText("MODO JUGADOR", ScreenWidth/2-20, 0, 20, WHITE);
             DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
             DrawAliens(game->aliens, frame_time, assets);
             DrawUFO(game, assets);
             DrawBullets(game, assets);
             DrawPlayer (game, assets, ScreenHeight);
+            DrawScore(game);
+            DrawLives(game, assets, ScreenWidth);
+
             break;
 
         case GAME_SPECTATOR:

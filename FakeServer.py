@@ -35,14 +35,14 @@ game_state = {
         {"id": 9, "x": 400, "y": 270, "type": "octopus","points": 40}
     ], 
   "bullets": [ 
-    { "id": 1, "x": 320, "y": 450, "owner": "player" }, 
+    { "id": 1, "x": 320, "y": 200, "owner": "player" }, 
     { "id": 2, "x": 300, "y": 200, "owner": "alien"  } 
     ],
     "bunkers":    [
-        {"id": 1, "x": 290, "y": 700, "health": 100},
-        {"id": 2, "x": 550, "y": 700, "health": 100},
-        {"id": 3, "x": 780, "y": 700, "health": 100},
-        {"id": 4, "x": 1010, "y": 700, "health": 100}
+        {"id": 1, "x": 80, "y": 650, "health": 100},
+        {"id": 2, "x": 380, "y": 650, "health": 100},
+        {"id": 3, "x": 700, "y": 650, "health": 100},
+        {"id": 4, "x": 1000, "y": 650, "health": 100}
     ],
     "ufo":        {"active": False, "x": 0, "points": 0},
     "wave":       1,
@@ -186,10 +186,10 @@ try:
             for bunker in game_state["bunkers"][:]:
 
                 if (
-                    bullet["x"] < bunker["x"] + 80 and
-                    bullet["x"] > bunker["x"] and
-                    bullet["y"] < bunker["y"] + 60 and
-                    bullet["y"] > bunker["y"]
+                    bullet["x"] <= bunker["x"] + 80 and
+                    bullet["x"] >= bunker["x"] and
+                    bullet["y"] <= bunker["y"] + 60 and
+                    bullet["y"] >= bunker["y"]
                 ):
                     bunker["health"] -= 10
 
@@ -207,10 +207,10 @@ try:
             if bullet["owner"] == "alien":
 
                 if (
-                    bullet["x"] < player["cannon_x"] + 60 and
-                    bullet["x"] + 4 > player["cannon_x"] and
-                    bullet["y"] < 700 + 30 and
-                    bullet["y"] + 10 > 700
+                    bullet["x"] <= player["cannon_x"] + 60 and
+                    bullet["x"] + 7 >= player["cannon_x"] and
+                    bullet["y"] <= 810 and
+                    bullet["y"] + 7 >= 810
                 ):
                     player["lives"] -= 1
                     bullets_to_remove.append(bullet)

@@ -1,5 +1,6 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
+
 #include <stdbool.h>
 // ---------------- PLAYER ----------------
 typedef struct {
@@ -38,7 +39,7 @@ typedef struct {
 
 // ---------------- BUNKER ----------------
 typedef struct {
-    int id, x;
+    int id, x, y;
     int health;
 } Bunker;
 
