@@ -127,18 +127,22 @@ void DrawLives(GameState* game, Assets *assets, float ScreenWidth){
     // Variables
     float x = ScreenWidth-(ScreenWidth/4);
     float y = 10;
-    float size = 80;
+    float size = 70;
+    float size_y = 40;
     // Texto
-    DrawText(("LIVES: "), x-60, y, 30, WHITE);
+    DrawText(("LIVES: "), x-100, y, 30, WHITE);
     
     //Dibuja las imagenes de las vidas
     for (int i = 0; i < game->player.lives; i++)
     {
+        //Cada 4 vidas, se inserta la imagen del siguiente abajo del primero de la fila anterior
+        int col = i % 4;
+        int row = i / 4;
 
         DrawTexture(
             assets->Lives,
-            x + (i * size) + 50,
-            y, 
+            (x + (col * size))+5,
+            (y + (row * size_y))-10, 
             WHITE
         );
     }
@@ -198,7 +202,7 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
 
         case GAME_PLAYER:
             ClearBackground(DARKBLUE);
-            DrawText("MODO JUGADOR", ScreenWidth/2-20, 0, 20, WHITE);
+            DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, 20, WHITE);
             DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
             DrawAliens(game->aliens, frame_time, assets);
             DrawUFO(game, assets);

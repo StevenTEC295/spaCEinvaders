@@ -170,6 +170,7 @@ try:
                         player["score"] += alien["points"]
                         game_state["aliens"].remove(alien)
                         bullets_to_remove.append(bullet)
+                        player["lives"] += 1
                         # se desactiva después del frame
                         player_shooting = False
                         break
