@@ -22,7 +22,7 @@ conn.sendall((json.dumps(ack) + "\n").encode())
 # mandar GAME_STATE cada 100ms
 game_state = {
     "type": "GAME_STATE",
-    "player": {"player_id": "P1", "cannon_x": 600, "lives": 3, "score": 0},
+    "player": {"player_id": "P1", "cannon_x": 600, "lives": 1, "score": 0},
     "aliens": [
         {"id": 1, "x": 40, "y": 150, "type": "squid", "points": 20},
         {"id": 2, "x": 200, "y": 150, "type": "squid", "points": 20},

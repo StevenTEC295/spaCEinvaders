@@ -201,15 +201,19 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
             break;
 
         case GAME_PLAYER:
-            ClearBackground(DARKBLUE);
-            DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, 20, WHITE);
-            DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
-            DrawAliens(game->aliens, frame_time, assets);
-            DrawUFO(game, assets);
-            DrawBullets(game, assets);
-            DrawPlayer (game, assets, ScreenHeight);
-            DrawScore(game);
-            DrawLives(game, assets, ScreenWidth);
+            if (strcmp(game->game_status,"GAME_OVER") != 0) {
+                ClearBackground(DARKBLUE);
+                DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, 20, WHITE);
+                DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
+                DrawAliens(game->aliens, frame_time, assets);
+                DrawUFO(game, assets);
+                DrawBullets(game, assets);
+                DrawPlayer (game, assets, ScreenHeight);
+                DrawScore(game);
+                DrawLives(game, assets, ScreenWidth);
+            } else {
+                DrawText("GAME OVER", 300, 200, 40, RED);
+            }
 
             break;
 
