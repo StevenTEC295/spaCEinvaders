@@ -9,7 +9,7 @@ print("Esperando cliente C...")
 conn, addr = server.accept()
 print(f"Cliente conectado: {addr}")
 
-"""
+
 # leer el JOIN del cliente
 data = conn.recv(1024).decode()
 print(f"Recibido: {data}")
@@ -17,7 +17,7 @@ print(f"Recibido: {data}")
 # responder con JOIN_ACK
 ack = {"type": "JOIN_ACK", "role": "PLAYER", "player_id": "P1", "cannon_x": 400}
 conn.sendall((json.dumps(ack) + "\n").encode())
-"""
+
 
 # mandar GAME_STATE cada 100ms
 game_state = {
@@ -270,6 +270,13 @@ try:
                     })
 
                     bullet_id_counter += 1
+
+                if "RIGHT" in msg:
+                    game_state["player"]["cannon_x"] += 10
+
+                if "LEFT" in msg:
+                    game_state["player"]["cannon_x"] -= 10
+
                     
         except BlockingIOError:
             pass
@@ -278,7 +285,7 @@ try:
 
         # Envia los datos
         conn.sendall((json.dumps(game_state) + "\n").encode())
-        time.sleep(0.5)
+        time.sleep(0.05)
 
 except (BrokenPipeError, ConnectionResetError):
     print("Cliente desconectado")

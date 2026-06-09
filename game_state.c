@@ -49,7 +49,7 @@ void process_message(const char* raw_json, GameState* state) {
             cJSON* id = cJSON_GetObjectItem(player, "player_id");
             if (id && id->valuestring)
                 strncpy(state->player.player_id, id->valuestring, 9);
-            
+                
             //Busca y designa la ubicación del cañon del jugador en valores numéricos a los structs
             cJSON* cannon = cJSON_GetObjectItem(player, "cannon_x");
             if (cannon) state->player.cannon_x = cannon->valueint;
@@ -62,6 +62,7 @@ void process_message(const char* raw_json, GameState* state) {
             cJSON* score = cJSON_GetObjectItem(player, "score");
             if (score) state->player.score = score->valueint;
         }
+        
 
 
         // ---------------- ALIENS (LISTA ENLAZADA) ----------------

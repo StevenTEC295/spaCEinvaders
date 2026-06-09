@@ -62,11 +62,25 @@ typedef struct {
 
 } GameState;
 
-// -----------------Shared State----------------
+// -----------------Shared State(Mensajes de Server)----------------
 typedef struct {
     char buffer[4096];
     int has_new_data;
 } SharedState;
+
+// ================= UI STATE =================
+typedef enum {
+    MENU,
+    GAME_PLAYER,
+    GAME_SPECTATOR
+} AppState;
+
+//================== UI STATE (Enviar Server)=========
+typedef enum {
+    EVENT_NONE,
+    EVENT_JOIN_PLAYER,
+    EVENT_JOIN_SPECTATOR
+} UIEvent;
 
 
 #endif
