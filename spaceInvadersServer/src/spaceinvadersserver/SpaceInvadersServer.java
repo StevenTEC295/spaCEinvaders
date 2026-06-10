@@ -1,22 +1,25 @@
 package spaceinvadersserver;
 
+import admin.AdminWindow;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import network.GameServer;
 
 public class SpaceInvadersServer {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
 
         GameServer server = new GameServer(port);
 
-        // consola admin en hilo separado, con referencia al mapa de engines
-        /*AdminConsole admin = new AdminConsole(server.getEngines());
-        admin.setDaemon(true); // se cierra cuando cierra el servidor
-        admin.start();*/
+        // pasar el mismo Map que usa el servidor
+        SwingUtilities.invokeLater(() -> new AdminWindow(server.getEngines()));
 
-        // bloquea aquí aceptando conexiones
-        server.start();
+        try {
+            server.start();
+        } catch (IOException e) {
+            System.out.println("Error iniciando servidor: " + e.getMessage());
+        }
     }
     
 }

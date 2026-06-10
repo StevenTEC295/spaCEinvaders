@@ -29,8 +29,9 @@ public class GameEngine extends Thread {
     private int alienMovEach;  
     private int ufoMovEach;
     private int ufoTickCount;
+
     // agregar con los demás campos al inicio de la clase
-    private int alienShootEach = 15; // dispara cada 15 ticks
+    private int alienShootEach = 2; // dispara cada 15 ticks
     private int alienShootTick = 0;
     public GameEngine(String jugadorId){
         this.jugador = new Jugador(jugadorId, 400);
@@ -40,24 +41,27 @@ public class GameEngine extends Thread {
         this.observers  = new ArrayList<>(); 
         this.ufo = null;
         this.wave=1;
-        this.velocidad = 500;
+        this.velocidad = 250;
         this.running = true;
         this.alienDirection = 1;
         this.ufoDirection = 1;
         this.tickCount = 0;
-        this.alienMovEach =8;
+        this.alienMovEach =2;
         this.ufoTickCount = 0;
-        this.ufoMovEach = 4;
+        this.ufoMovEach = 2;
         
         
     }
+    private volatile GameState lastState;
     @Override
+    
     public void run(){
         while(running){
             update();
             checkCollisions();
             notifyStateChanged();
             checkWaveComplete();
+            lastState = buildState();
             try {Thread.sleep(velocidad);}
             catch (InterruptedException e) {Thread.currentThread().interrupt();}
         
@@ -151,6 +155,7 @@ public class GameEngine extends Thread {
             if (a.isVivo() && overlaps(b,a)){
                 a.matar();
                 b.desactivar();
+                System.out.println("Alien muerto:"+a.getId());
                 jugador.agregarPuntos(a.getPuntos());
                 notifyAlienMuerto(a.getId(), a.getPuntos(), jugador.getPuntos());
             }
@@ -197,7 +202,7 @@ public class GameEngine extends Thread {
     boolean overlapsFondo = aliens.stream().filter(Alien::isVivo).anyMatch(a -> a.getY() >= 20);
 
         if (overlapsFondo) {
-            running = false;
+            detener();
             notifyGameOver("LOS ALIENS TE ALCANZARON", jugador.getPuntos());
         }
     for (Bala b : balas) {
@@ -235,8 +240,8 @@ public class GameEngine extends Thread {
 
     // crear bala desde la posición del alien
     int id = balas.size() + 1;
-    int bx = tirador.getX() * 32 + 14; // centro del alien
-    int by = tirador.getY() * 32 + 28; // parte inferior del alien
+    int bx = tirador.getX() * 75 + 37;
+    int by = tirador.getY() * 55 + 55;
     balas.add(new Bala(id, bx, by, "alien"));
 }
     
@@ -254,7 +259,7 @@ public class GameEngine extends Thread {
         }
         if (wave >= 3){
             notifyGameWon(wave, jugador.getPuntos());
-            running = false;
+            detener();
         }
     }
 
@@ -265,33 +270,35 @@ public class GameEngine extends Thread {
     private boolean overlapsJugador(Bala b) {
         int bx = b.getX(), by = b.getY();
         int cx = jugador.getCannonX();
-        return bx >= cx - 20 && bx <= cx + 20 && by >= 540 && by <= 580;
+        int cy = jugador.getCannonY();
+        return bx >= cx && bx <= cx + 75 && by >= cy && by <= cy+60;
     }
 
     private boolean overlaps(Bala b, Alien a) {
-        int bx = b.getX(), by = b.getY();
-        int ax = a.getX() * 32, ay = a.getY() * 32;
-        return bx >= ax && bx <= ax + 28 && by >= ay && by <= ay + 28;
-    }
+    int bx = b.getX(), by = b.getY();
+    int ax = a.getX() * 75, ay = a.getY() * 55; // mismo que el renderer
+    return bx >= ax && bx <= ax + 75 && by >= ay && by <= ay + 55;
+}
+
     private boolean overlapsUFO(Bala b, UFO ufo) {
         int bx = b.getX(), by = b.getY();
-        int ufox = ufo.getX() * 32, ufoy = ufo.getY() * 32;
-        return bx >= ufox && bx <= ufox + 28 && by >= ufoy && by <= ufoy + 28;
+        int ufox = ufo.getX() * 75, ufoy = ufo.getY() * 55;
+        return bx >= ufox && bx <= ufox +110  && by >= ufoy && by <= ufoy + 55;
         }
     
 private boolean overlapsBunker(Bala b, Bunker bunker) {
         int bx = b.getX(), by = b.getY();
-        int bunkx = bunker.getX() * 32;
-        int bunky = bunker.getY() * 32;
+        int bunkx = bunker.getX() * 75;
+        int bunky = bunker.getY() * 55;
 
         return bx >= bunkx &&
-               bx <= bunkx + 28 &&
+               bx <= bunkx+120  &&
                by >= bunky &&
-               by <= bunky + 28;
+               by <= bunky+90;
     }
 public synchronized void moverJugador(String direction) {
-        if (direction.equals("LEFT"))  jugador.moverIzquierda(5, 0);
-        if (direction.equals("RIGHT")) jugador.moverDerecha(5, 760);
+        if (direction.equals("LEFT"))  jugador.moverIzquierda();
+        if (direction.equals("RIGHT")) jugador.moverDerecha();
     }
 public synchronized void shoot() {
         boolean alreadyShooting = balas.stream()
@@ -345,7 +352,9 @@ public synchronized void shoot() {
         s.status     = running ? "RUNNING" : "FINISHED";
         return s;
     }  
-    // GameEngine.java — agregar este método
+
+public GameState getLastState() { return lastState; }
+    
     public synchronized void detener() {
     this.running = false;
 }
