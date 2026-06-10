@@ -35,8 +35,8 @@ void DrawAliens(AlienNode* aliens, int frame, Assets *assets)
 
         DrawTexture(
             texture,
-            current->x,
-            current->y,
+            (current->x)*assets->aliens->width,
+            (current->y)*assets->aliens->height,
             WHITE
         );
 
@@ -47,7 +47,7 @@ void DrawAliens(AlienNode* aliens, int frame, Assets *assets)
 //================================================
 //============FUNCIÓN DIBUJAR BUNKERS ============
 //================================================
-void DrawBunkers(GameState* game, Assets *assets, float ScreenWidth, float ScreenHeight)
+void DrawBunkers(GameState* game, Assets *assets)
 {
     for (int i = 0; i < game->bunker_count; i++)
     {
@@ -63,8 +63,8 @@ void DrawBunkers(GameState* game, Assets *assets, float ScreenWidth, float Scree
 
         DrawTexture(
             assets->bunkers[index],
-            game->bunkers[i].x,
-            ScreenHeight-250, 
+            (game->bunkers[i].x)*assets->bunkers->width,
+            (game->bunkers[i].y)*assets->bunkers->height, 
             WHITE
         );
     }
@@ -82,7 +82,7 @@ void DrawBullets(GameState* game, Assets *assets)
         Texture2D tex;
 
         // Filtro según dueño
-        if (strcmp(b->owner, "player") == 0 || strcmp(b->owner, "P1") == 0)
+        if (strcmp(b->owner, "jugador") == 0 || strcmp(b->owner, "P1") == 0)
         {
             tex = assets->bullets[0];
         }
@@ -99,17 +99,17 @@ void DrawBullets(GameState* game, Assets *assets)
 //============FUNCIÓN DIBUJAR OVNI ===============
 //================================================
 void DrawUFO (GameState* game, Assets *assets){
-    if (game->ufo.active == true)
+    if (game->ufo.exists)
     { 
-        DrawTexture(assets->UFO,game->ufo.x,80,WHITE);
+        DrawTexture(assets->UFO,game->ufo.x,game->ufo.y,WHITE);
     }
 }
 
 //================================================
 //============FUNCIÓN DIBUJAR JUGADOR ============
 //================================================
-void DrawPlayer (GameState* game, Assets *assets, float ScreenHeight){
-    DrawTexture(assets->player,game->player.cannon_x,ScreenHeight-((assets->player.height)*1.5),WHITE);
+void DrawPlayer (GameState* game, Assets *assets){
+    DrawTexture(assets->player,game->player.cannon_x,game->player.cannon_y,WHITE);
 }
 
 //================================================
@@ -204,11 +204,11 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
             if (strcmp(game->game_status,"GAME_OVER") != 0) {
                 ClearBackground(DARKBLUE);
                 DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, 20, WHITE);
-                DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
+                DrawBunkers(game, assets);
                 DrawAliens(game->aliens, frame_time, assets);
                 DrawUFO(game, assets);
                 DrawBullets(game, assets);
-                DrawPlayer (game, assets, ScreenHeight);
+                DrawPlayer (game, assets);
                 DrawScore(game);
                 DrawLives(game, assets, ScreenWidth);
             } else {

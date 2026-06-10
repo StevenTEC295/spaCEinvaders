@@ -5,7 +5,7 @@
 // ---------------- PLAYER ----------------
 typedef struct {
     char player_id[10], role[10];
-    int cannon_x, lives, score;
+    int cannon_x, cannon_y, lives, score;
 } Player;
 
 // ---------------- SPECTATOR ----------------
@@ -32,7 +32,7 @@ typedef struct AlienNode {
 
 // ---------------- BULLET ----------------
 typedef struct {
-    int x, y;
+    int id,x, y;
     //bool active;
     char owner[10];
 } Bullet;
@@ -45,8 +45,9 @@ typedef struct {
 
 // ---------------- UFO ----------------
 typedef struct {
+    bool exists; //Revisa si aparece del todo
     bool active;
-    int x, points;
+    int x, y, points;
 } UFO;
 
 // ---------------- GAME STATE ----------------

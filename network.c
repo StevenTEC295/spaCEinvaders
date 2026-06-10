@@ -112,7 +112,7 @@ void network_send_right(SOCKET sock)
         printf("Error SHOOT: %d\n", WSAGetLastError());
     }
 }
-//Derecha
+//Izquierda
 void network_send_left(SOCKET sock)
 {
     const char* msg = "{\"type\":\"LEFT\"}\n";

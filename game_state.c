@@ -42,20 +42,23 @@ void process_message(const char* raw_json, GameState* state) {
 
         // ---------------- PLAYER ----------------
         //Busca el objeto "player"
-        cJSON* player = cJSON_GetObjectItem(root, "player");
+        cJSON* player = cJSON_GetObjectItem(root, "jugador");
         
         if (player) {
             //Busca y copia el ID del jugador a los structs (MAX 9 caracteres)
-            cJSON* id = cJSON_GetObjectItem(player, "player_id");
+            cJSON* id = cJSON_GetObjectItem(player, "jugador_id");
             if (id && id->valuestring)
                 strncpy(state->player.player_id, id->valuestring, 9);
                 
             //Busca y designa la ubicación del cañon del jugador en valores numéricos a los structs
             cJSON* cannon = cJSON_GetObjectItem(player, "cannon_x");
             if (cannon) state->player.cannon_x = cannon->valueint;
+
+            cJSON* cannon_y = cJSON_GetObjectItem(player, "cannon_y");
+            if (cannon_y) state->player.cannon_y = cannon_y->valueint;
             
             //Busca y designa la cantidad de vidas del jugador en valores numéricos a los structs
-            cJSON* lives = cJSON_GetObjectItem(player, "lives");
+            cJSON* lives = cJSON_GetObjectItem(player, "vidas");
             if (lives) state->player.lives = lives->valueint;
 
             //Busca y designa el puntaje del jugador en valores numéricos a los structs
@@ -86,7 +89,7 @@ void process_message(const char* raw_json, GameState* state) {
                 cJSON* id = cJSON_GetObjectItem(alien, "id");
                 cJSON* x  = cJSON_GetObjectItem(alien, "x");
                 cJSON* y  = cJSON_GetObjectItem(alien, "y");
-                cJSON* pts = cJSON_GetObjectItem(alien, "pts");
+                cJSON* pts = cJSON_GetObjectItem(alien, "points");
                 
                 //Designa todos los atributos a los structs, da 0 si están vacíos
                 node->id  = id ? id->valueint : 0;
@@ -98,13 +101,13 @@ void process_message(const char* raw_json, GameState* state) {
                 cJSON* t = cJSON_GetObjectItem(alien, "type");
                 if (t && t->valuestring)
                 {
-                    if (strcmp(t->valuestring, "crab") == 0)
+                    if (strcmp(t->valuestring, "cangrejo") == 0)
                         node->alienType = ALIEN_CRAB;
 
-                    else if (strcmp(t->valuestring, "octopus") == 0)
+                    else if (strcmp(t->valuestring, "pulpo") == 0)
                         node->alienType = ALIEN_OCTOPUS;
 
-                    else if (strcmp(t->valuestring, "squid") == 0)
+                    else if (strcmp(t->valuestring, "calamar") == 0)
                         node->alienType = ALIEN_SQUID;
 
                     else
@@ -119,7 +122,7 @@ void process_message(const char* raw_json, GameState* state) {
 
         // ---------------- BULLETS ----------------
         //Busca el objeto "bullets"
-        cJSON* bullets = cJSON_GetObjectItem(root, "bullets");
+        cJSON* bullets = cJSON_GetObjectItem(root, "balas");
         //Contador de balas 
         state->bullet_count = 0;
 
@@ -131,17 +134,21 @@ void process_message(const char* raw_json, GameState* state) {
                 //Termina el recorrido una vez que se alcanza el limite
                 if (state->bullet_count >= 100) break;
 
-                //Designa todos los atributos a los structs (x,y)
+                //Designa todos los atributos a los structs (id,x,y)
+                cJSON* id = cJSON_GetObjectItem(b, "id");
                 cJSON* x = cJSON_GetObjectItem(b, "x");
                 cJSON* y = cJSON_GetObjectItem(b, "y");
+                
 
                 if (!cJSON_IsNumber(x) || !cJSON_IsNumber(y))
                     continue;
 
                 int idx = state->bullet_count;
-
+                
+                state->bullets[idx].id = id->valueint;
                 state->bullets[idx].x = x->valueint;
                 state->bullets[idx].y = y->valueint;
+
                 
                 state->bullets[idx].owner[0] = '\0';
 
@@ -185,15 +192,34 @@ void process_message(const char* raw_json, GameState* state) {
         }
 
         // ---------------- UFO ----------------
+        // Reiniciar UFO
+        state->ufo.exists = false;
+        state->ufo.active = false;
+        state->ufo.x = 0;
+        state->ufo.y = 0;
+        state->ufo.points = 0;
+
         //Busca el objeto "ufo"
         cJSON* ufo = cJSON_GetObjectItem(root, "ufo");
-        if (ufo) {
-            //Designa todos los atributos a los structs
-            state->ufo.active = cJSON_GetObjectItem(ufo, "active")->valueint;
-            state->ufo.x      = cJSON_GetObjectItem(ufo, "x")->valueint;
-            state->ufo.points = cJSON_GetObjectItem(ufo, "points")->valueint;
-        }
 
+        //Verificar si el ufo está vacío
+        if (ufo && cJSON_IsObject(ufo) && ufo->child != NULL)
+        {
+            state->ufo.exists = true;
+
+            cJSON* activo = cJSON_GetObjectItem(ufo, "activo");
+            cJSON* x      = cJSON_GetObjectItem(ufo, "x");
+            cJSON* y      = cJSON_GetObjectItem(ufo, "y");
+            cJSON* points = cJSON_GetObjectItem(ufo, "points");
+
+            if (activo && x && y && points)
+            {
+                state->ufo.active = activo->valueint;
+                state->ufo.x      = x->valueint;
+                state->ufo.y      = y->valueint;
+                state->ufo.points = points->valueint;
+            }
+        }
         // ---------------- GAME META ----------------
         //Busca el objeto "wave"
         cJSON* wave = cJSON_GetObjectItem(root, "wave");

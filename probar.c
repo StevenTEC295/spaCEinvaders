@@ -14,7 +14,8 @@
 #include "include/assets.h"
 #include "include/input.h"
 
-#define SERVER_IP "127.0.0.1"
+//"127.0.0.1" prueba
+#define SERVER_IP "192.168.100.56"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 4096
 #define SCREEN_WIDTH 1200
@@ -48,7 +49,11 @@ DWORD WINAPI network_thread (LPVOID arg){
             //===Bloquear buffer a este hilo hasta que termine de copiar===
             EnterCriticalSection(&cs);
             // Sobrescribe el estado al más nuevo
-            strcpy(data.buffer, buffer);
+
+            //strcpy(data.buffer, buffer);
+            strncpy(data.buffer, buffer, sizeof(data.buffer) - 1);
+            data.buffer[sizeof(data.buffer) - 1] = '\0';
+
             data.has_new_data = 1;
             //Dejar de bloquear
             LeaveCriticalSection(&cs);
@@ -61,6 +66,9 @@ DWORD WINAPI network_thread (LPVOID arg){
         } 
         else{
             int err = WSAGetLastError();
+            if (err == WSAEINTR || !running) {
+                break;
+            }
             printf("Error recv: %d\n", err);
             running = 0;
             break;
@@ -151,8 +159,9 @@ int main(void)
     shutdown(sock, SD_BOTH);
     closesocket(sock);
 
-    //Ejecuta el hilo receptor
     WaitForSingleObject(hNetwork, INFINITE);
+    //Ejecuta el hilo receptor
+    
     CloseHandle(hNetwork);
 
     //Librar memoria de los PNGs
