@@ -16,8 +16,8 @@ public class JsonSerializer {
 
         // jugador
         sb.append(String.format(
-            "\"jugador\":{\"jugador_id\":\"%s\",\"cannon_x\":%d,\"vidas\":%d,\"score\":%d},",
-            s.jugador.getJugadorId(), s.jugador.getCannonX(),
+            "\"jugador\":{\"jugador_id\":\"%s\",\"cannon_x\":%d,\"cannon_y\":%d,\"vidas\":%d,\"score\":%d},",
+            s.jugador.getJugadorId(), s.jugador.getCannonX(),s.jugador.getCannonY(),
             s.jugador.getVidas(),    s.jugador.getPuntos()
         ));
 
@@ -45,8 +45,8 @@ public class JsonSerializer {
         // ufo
         if (s.ufo != null){
             sb.append(String.format(
-    "\"ufo\":{\"activo\":%b,\"x\":%d,\"points\":%d},",
-    s.ufo.isVivo(), s.ufo.getX(), s.ufo.getPuntos()
+    "\"ufo\":{\"activo\":%b,\"x\":%d,\"y\":%d,\"points\":%d},",
+    s.ufo.isVivo(), s.ufo.getX(),s.ufo.getY(), s.ufo.getPuntos()
 ));
         }else{sb.append(String.format("\"ufo\":{},"));}
         
@@ -54,8 +54,8 @@ public class JsonSerializer {
         sb.append("\"bunkers\":[");
         List<String> bunkerList = s.bunkers.stream()
             .map(b -> String.format(
-                "{\"id\":%d,\"x\":%d,\"health\":%d}",
-                b.getID(), b.getX(), b.getHealth()
+                "{\"id\":%d,\"x\":%d,\"y\":%d,\"health\":%d}",
+                b.getID(), b.getX(),b.getY(), b.getHealth()
             ))
             .collect(Collectors.toList());
         sb.append(String.join(",", bunkerList)).append("],");

@@ -52,6 +52,7 @@ public class ClientHandler extends Thread implements JuegoObserver{
     }
     private void handleJoin(String json) {
         // parsear con org.json o gson
+        System.out.println(json);
         JSONObject obj = new JSONObject(json);
         this.role = obj.getString("role");
         System.out.println(this.role);
@@ -63,9 +64,9 @@ public class ClientHandler extends Thread implements JuegoObserver{
             engines.put(jugadorID, engine);
             engine.addObserver(this);
             engine.start();
-
+            
             send(String.format(
-                "{\"type\":\"JOIN_ACK\",\"role\":\"JUGADOR\",\"jugador_id\":\"%s\",\"cannon_x\":400}",
+                "{\"type\":\"JOIN_ACK\",\"role\":\"JUGADOR\",\"jugador_id\":\"%s\",\"cannon_x\":400}\n",
                 jugadorID
             ));
 

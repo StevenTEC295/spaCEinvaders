@@ -16,9 +16,9 @@ public class Bala {
     
     public void mover(){
         
-        y += owner.equals("Jugador") ? -8:+6;
+        y += owner.equals("jugador") ? -16:+16;
     }
-    public boolean isFueraAlcance(){return y<0 || y>600;}
+    public boolean isFueraAlcance(){return y<0 || y>1000;}
     public void desactivar(){this.activo = false;}
     public boolean isActivo(){return activo;}
     public int getX(){return x;}

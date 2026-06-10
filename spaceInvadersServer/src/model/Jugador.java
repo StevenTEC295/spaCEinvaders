@@ -6,20 +6,28 @@ public class Jugador {
     private int cannonX;
     private int vidas;
     private int puntos;
+    private int cannonY;
     
     public Jugador(String id, int cannonX){
         this.jugadorId = id;
         this.cannonX = cannonX;
+        this.cannonY = 817;
         this.vidas = 3;
         this.puntos = 0;
     
     }
     
-    public void moverDerecha(int velocidad, int maxX){
-        cannonX = Math.max(maxX, cannonX + velocidad);
+    public void moverDerecha(){
+        if (cannonX < 800){
+        cannonX+=50;
+        }
+        
     }
-    public void moverIzquierda(int velocidad, int maxX){
-        cannonX = Math.min(maxX, cannonX + velocidad);
+    public void moverIzquierda(){
+        if (cannonX > 100){
+            cannonX-=50;
+        }
+            
     }
     public void impacto () {vidas--;}
     
@@ -30,6 +38,7 @@ public class Jugador {
     // getters...
     public String getJugadorId() { return jugadorId; }
     public int getCannonX()     { return cannonX; }
+    public int getCannonY()     { return cannonY; }
     public int getVidas()       { return vidas; }
     public int getPuntos()       { return puntos; }
     
