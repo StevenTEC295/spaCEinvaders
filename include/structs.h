@@ -50,6 +50,12 @@ typedef struct {
     int x, y, points;
 } UFO;
 
+//----------------GAME_OVER----------------
+typedef struct {
+    int final_score;
+    char reason[20];
+}GameOver;
+
 // ---------------- GAME STATE ----------------
 typedef struct {
     Player player;
@@ -61,8 +67,9 @@ typedef struct {
     UFO ufo;
     int wave;
     char game_status[20];
-
+    GameOver gameOver;
 } GameState;
+
 
 // -----------------Shared State(Mensajes de Server)----------------
 typedef struct {
@@ -74,7 +81,9 @@ typedef struct {
 typedef enum {
     MENU,
     GAME_PLAYER,
-    GAME_SPECTATOR
+    GAME_SPECTATOR,
+    GAME_OVER,
+    GAME_WON
 } AppState;
 
 //================== UI STATE (Enviar Server)=========

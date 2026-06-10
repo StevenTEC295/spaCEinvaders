@@ -3,6 +3,7 @@
 
 bool LoadAssets(Assets *assets)
 {
+
     assets->player = LoadTexture("Assets/Ship.png");
     assets->UFO = LoadTexture("Assets/Ovni.png");
     assets->Lives = LoadTexture("Assets/Lives.png");

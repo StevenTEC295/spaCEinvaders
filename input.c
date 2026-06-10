@@ -6,9 +6,10 @@
 #include "include/input.h"
 #include "include/network.h"
 #include "include/structs.h"
+#include "include/game_state.h"
 #include <stdio.h>
 
-void input_handle(SOCKET sock, UIEvent *role) {
+void input_handle(SOCKET sock, UIEvent *role, GameState *game) {
     if (*role == EVENT_NONE) return;
 
     if (IsKeyPressed(KEY_SPACE)) {

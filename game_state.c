@@ -5,6 +5,7 @@
 #include "include/cJSON.h"
 #include "include/structs.h"
 
+
 // ================= FREE LIST =================
 void free_alien_list(AlienNode* head) {
     while (head) {
@@ -17,7 +18,7 @@ void free_alien_list(AlienNode* head) {
 //================================================
 // ================= PARSER JSON =================
 //================================================
-void process_message(const char* raw_json, GameState* state) {
+void process_message(const char* raw_json, GameState* state, AppState *UI) {
 
     //Convierte el texto en un árbol de datos CJSON
     cJSON* root = cJSON_Parse(raw_json);
@@ -181,7 +182,7 @@ void process_message(const char* raw_json, GameState* state) {
                 if (state->bunker_count >= 4) break;
                 
                 //Designa todos los atributos a los structs
-                state->bunkers[state->bunker_count].id = cJSON_GetObjectItem(b, "id")->valueint;
+                state->bunkers[state->bunker_count].id = cJSON_GetObjectItem(b,"id")->valueint;
                 state->bunkers[state->bunker_count].x = cJSON_GetObjectItem(b, "x")->valueint;
                 state->bunkers[state->bunker_count].y = cJSON_GetObjectItem(b, "y")->valueint;
                 state->bunkers[state->bunker_count].health = cJSON_GetObjectItem(b, "health")->valueint;
@@ -232,6 +233,28 @@ void process_message(const char* raw_json, GameState* state) {
         if (status && status->valuestring)
             strncpy(state->game_status, status->valuestring, 19);
     }
+    // Procesar el mensaje de JSON de "GAME_OVER"
+    if (strcmp(type->valuestring, "GAME_OVER") == 0) {
+
+        //Busca el objeto "reason"
+        cJSON* reason = cJSON_GetObjectItem(root, "reason");
+        //Designa el string de razon de perdida a los structs
+        if (reason && reason->valuestring)
+            strncpy(state->gameOver.reason, reason->valuestring, 19);
+
+        //Busca el objeto "final_score"
+        cJSON* final_score = cJSON_GetObjectItem(root, "final_score");
+        //Designa el valor númerico de la oleada a los structs
+        if (final_score) state->gameOver.final_score = final_score->valueint;
+        
+        *UI = GAME_OVER;
+        // opcional: cambiar estado del juego
+        //strncpy(state->game_status, "GAME_OVER", sizeof(state->game_status) - 1);
+        //state->game_status[sizeof(state->game_status) - 1] = '\0';
+    }
+    
+
+
     //Libera el árbol JSON (Liberar memoria reservada)
     cJSON_Delete(root);
 }

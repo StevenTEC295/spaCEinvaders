@@ -4,6 +4,6 @@
 #include "structs.h"
 #include <winsock2.h>
 
-void input_handle(SOCKET sock, UIEvent *role);
+void input_handle(SOCKET sock, UIEvent *role, GameState *game);
 
 #endif

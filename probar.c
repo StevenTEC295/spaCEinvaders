@@ -14,10 +14,10 @@
 #include "include/assets.h"
 #include "include/input.h"
 
-//"127.0.0.1" prueba
-#define SERVER_IP "192.168.100.56"
+//"127.0.0.1" prueba JAVA "192.168.100.56"
+#define SERVER_IP "172.20.10.2"
 #define SERVER_PORT 8080
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 10000
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 900
 
@@ -39,11 +39,12 @@ DWORD WINAPI network_thread (LPVOID arg){
 
     while (running){
 
+        printf("Esperando recv...\n");
         int bytes = recv(sock, buffer, BUFFER_SIZE - 1, 0);
 
         if (bytes > 0) {
             //===Imprimir lo recibido por el server======
-            buffer[bytes] = '\0';
+            //buffer[bytes] = '\0';
             //printf("MENSAJE SERVER:\n%s\n", buffer);
             
             //===Bloquear buffer a este hilo hasta que termine de copiar===
@@ -117,7 +118,7 @@ int main(void)
     GameState game = {0};
     printf("Entrando al loop principal\n");
     //PARSER JSON
-    while (!WindowShouldClose()){
+    while (!WindowShouldClose()|| game.game_status != "FINISHED"){
         
         //RENDER Temporizador animaciones
         alienTimer += GetFrameTime();
@@ -129,15 +130,18 @@ int main(void)
         }
 
         //RENDER Dibujar el juego 
-        DrawGame(&state, &role, &game, &assets, SCREEN_WIDTH, SCREEN_HEIGHT, alienFrame);
+        DrawGame(&state, &role, &game, &assets, SCREEN_WIDTH, SCREEN_HEIGHT, alienFrame,sock);
 
-        //Enviar mensaje de join
+        /*//Enviar mensaje de join
         if (!joined && role != EVENT_NONE) {
             network_send_join(sock, &role);
             joined = 1;
-        }  
-
-        input_handle(sock, &role);
+        }  */
+        
+        if (state == GAME_PLAYER){
+            input_handle(sock, &role, &game);
+        }
+        
 
         //Bloquear buffer a solo este hilo hasta que termine de parsear
         EnterCriticalSection(&cs);
@@ -145,7 +149,7 @@ int main(void)
         if (data.has_new_data)
         {
             //Parser CJSON
-            process_message(data.buffer, &game); 
+            process_message(data.buffer, &game, &state); 
             data.has_new_data = 0;
         }
         LeaveCriticalSection(&cs);
