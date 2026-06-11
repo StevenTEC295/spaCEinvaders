@@ -1,0 +1,5 @@
+{ 
+  "type":      "JOIN", 
+  "role":      "PLAYER", 
+  "player_id": "P1" 
+}
