@@ -22,13 +22,14 @@ static void send_packet(uint8_t jx, bool fire) {
     uint8_t btn = fire ? 1 : 0;
     uint8_t chk = (jx + btn) & 0xFF;
     printf("JX: %3d | BTN: %d | CHK: %3d\n", jx, btn, chk);
+    fflush(stdout);
 }
 
 // ── Main ─────────────────────────────────────────────────────
 int main(void) {
     stdio_init_all();
 
-    // Esperar a que el USB esté listo
+    // Esperar a que el USB esté listo (sin bloquear si no hay conexión)
     sleep_ms(2000);
 
     // Inicializar ADC (GPIO27 → canal 1)
@@ -40,8 +41,6 @@ int main(void) {
     gpio_init(BTN_PIN);
     gpio_set_dir(BTN_PIN, GPIO_IN);
     gpio_pull_down(BTN_PIN);
-
-    printf("Control remoto iniciado — %d Hz\n", SEND_HZ);
 
     while (true) {
         uint32_t t0 = to_ms_since_boot(get_absolute_time());

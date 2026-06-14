@@ -16,8 +16,13 @@ target_link_libraries(control
     hardware_adc
 )
 
-# Habilitar salida por USB
+# Habilitar salida por USB, deshabilitar UART
 pico_enable_stdio_usb(control 1)
 pico_enable_stdio_uart(control 0)
+
+# No bloquear esperando conexión USB
+target_compile_definitions(control PRIVATE
+    PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=0
+)
 
 pico_add_extra_outputs(control)
