@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
+#include "pico/stdio_usb.h"
 
 // ── Configuración ────────────────────────────────────────────
 #define SEND_HZ     60
@@ -28,9 +29,11 @@ static void send_packet(uint8_t jx, bool fire) {
 // ── Main ─────────────────────────────────────────────────────
 int main(void) {
     stdio_init_all();
+    while (!stdio_usb_connected()) {
+        sleep_ms(100);
+    }
+    sleep_ms(500);
 
-    // Esperar a que el USB esté listo (sin bloquear si no hay conexión)
-    sleep_ms(2000);
 
     // Inicializar ADC (GPIO27 → canal 1)
     adc_init();
