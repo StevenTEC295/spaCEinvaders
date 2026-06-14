@@ -5,5 +5,6 @@
 #include <winsock2.h>
 
 void input_handle(SOCKET sock, UIEvent *role, GameState *game);
-
+void controller_init(void);
+void controller_close(void);
 #endif

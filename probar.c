@@ -109,6 +109,8 @@ int main(void)
     Assets assets;
     //Cargar PNGs
     LoadAssets(&assets);
+    controller_init();  
+
     //Variable de temporizador para animaciones
     int alienFrame = 0;
     float alienTimer = 0.0f;
@@ -156,6 +158,7 @@ int main(void)
         
     }
     DeleteCriticalSection(&cs);
+    controller_close(); 
 
     printf("Saliendo del loop principal\n");
 
