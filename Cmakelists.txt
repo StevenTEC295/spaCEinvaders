@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
 
-# Importar el SDK del Pico ANTES de project()
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 project(control C CXX ASM)
@@ -12,16 +11,13 @@ add_executable(control
     control.c
 )
 
-# Enlazar las bibliotecas necesarias
 target_link_libraries(control
     pico_stdlib
     hardware_adc
-    hardware_uart
 )
 
-# Habilitar salida USB y UART para printf (opcional, útil para depuración)
+# Habilitar salida por USB
 pico_enable_stdio_usb(control 1)
 pico_enable_stdio_uart(control 0)
 
-# Generar archivos .uf2, .hex, etc.
 pico_add_extra_outputs(control)
