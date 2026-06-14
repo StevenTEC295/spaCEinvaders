@@ -13,10 +13,10 @@
 #include <windows.h>
 
 // ── Configuración del control ─────────────────────────────────
-#define CONTROLLER_PORT   "COM7"
+#define CONTROLLER_PORT   "COM8"
 #define CONTROLLER_BAUD   115200
-#define JOY_DEAD_ZONE     20      // margen alrededor del centro (128)
-#define JOY_CENTER        128
+#define JOY_DEAD_ZONE     15      // margen alrededor del centro (128)
+#define JOY_CENTER        112
 
 static HANDLE hSerial = INVALID_HANDLE_VALUE;
 static bool   controller_ready = false;
@@ -43,14 +43,15 @@ void controller_init(void) {
     dcb.Parity   = NOPARITY;
     SetCommState(hSerial, &dcb);
 
-    COMMTIMEOUTS timeouts = { 0 };
-    timeouts.ReadIntervalTimeout        = 100;
-    timeouts.ReadTotalTimeoutMultiplier = 10;
-    timeouts.ReadTotalTimeoutConstant   = 100;
+   COMMTIMEOUTS timeouts = { 0 };
+    timeouts.ReadIntervalTimeout        = MAXDWORD;
+    timeouts.ReadTotalTimeoutMultiplier = 0;
+    timeouts.ReadTotalTimeoutConstant   = 0;
     SetCommTimeouts(hSerial, &timeouts);
 
     controller_ready = true;
     printf("[Controller] Control conectado en %s\n", CONTROLLER_PORT);
+    printf("[Controller] Handle valido: %s\n", hSerial != INVALID_HANDLE_VALUE ? "SI" : "NO"); 
 }
 
 void controller_close(void) {
@@ -70,6 +71,7 @@ static bool serial_read_line(char *buf, int max_len) {
     while (i < max_len - 1) {
         if (!ReadFile(hSerial, &c, 1, &read_count, NULL) || read_count == 0)
             return false;
+         printf("[Serial] char: %c\n", c);
         if (c == '\n') break;
         if (c != '\r') buf[i++] = c;
     }
@@ -105,12 +107,13 @@ void input_handle(SOCKET sock, UIEvent *role, GameState *game) {
     if (IsKeyPressed(KEY_LEFT)) {
         network_send_left(sock);
     }
-
+    
     // ── Control físico ────────────────────────────────────────
     int  jx   = JOY_CENTER;
     bool fire = false;
 
     if (controller_read(&jx, &fire)) {
+        printf("[Controller] JX: %d | FIRE: %d\n", jx, fire);
         // Joystick: valores bajos = derecha, valores altos = izquierda
         // (invertido por hardware, se interpreta al revés)
         if (jx < JOY_CENTER - JOY_DEAD_ZONE) {

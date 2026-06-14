@@ -111,7 +111,7 @@ int main(void)
     Assets assets;
     //Cargar PNGs
     LoadAssets(&assets);
-    controller_init();  
+    controller_init();
 
     //Variable de temporizador para animaciones
     int alienFrame = 0;
