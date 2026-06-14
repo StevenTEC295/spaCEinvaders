@@ -15,7 +15,7 @@
 #include "include/input.h"
 
 //"127.0.0.1" prueba JAVA "192.168.100.56"
-#define SERVER_IP "172.20.10.2"
+#define SERVER_IP "192.168.100.56"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 10000
 #define SCREEN_WIDTH 1200
@@ -82,6 +82,8 @@ DWORD WINAPI network_thread (LPVOID arg){
 //Hilo principal (Renders, input y otros)
 int main(void)
 {
+    printf("Iniciando...\n");  // ← agrega esta línea
+    fflush(stdout);  
     //======================CONEXIÓN======================
     //Llamar para recibir o enviar datos
     SOCKET sock = connect_server(SERVER_IP, SERVER_PORT);

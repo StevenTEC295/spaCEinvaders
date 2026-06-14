@@ -1,20 +1,16 @@
-PROJECT_NAME = game
+PROJECT_NAME = probar
 
 CC = gcc
 
-SRC_DIR = src
-OBJ_DIR = obj
+# Archivos fuente directamente en la raíz
+SRC = probar.c network.c game_state.c renderer.c assets.c input.c cJSON.c
 
-# Buscar todos los .c
-SRC = $(wildcard $(SRC_DIR)/*.c)
-OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
-
-# Raylib (ajusta si lo tienes instalado en otro lado)
-RAYLIB_PATH = C:/raylib
-INCLUDE_PATHS = -I$(SRC_DIR) -I$(RAYLIB_PATH)/include -Iexternal/cJSON
+# Raylib
+RAYLIB_PATH = C:/raylib/w64devkit
+INCLUDE_PATHS = -I. -Iinclude -I$(RAYLIB_PATH)/include
 
 # Librerías
-LIBS = -lraylib -lopengl32 -lgdi32 -lwinmm
+LIBS = -static -lraylib -lopengl32 -lgdi32 -lwinmm
 
 # Winsock SOLO en Windows
 ifeq ($(OS),Windows_NT)
@@ -33,14 +29,8 @@ LDFLAGS = -L$(RAYLIB_PATH)/lib
 # Build final
 all: $(PROJECT_NAME)
 
-$(PROJECT_NAME): $(OBJ)
+$(PROJECT_NAME): $(SRC)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(LIBS)
 
-# Compilar objetos
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
-	$(CC) -c $< -o $@ $(CFLAGS)
-
 clean:
-	rm -rf $(OBJ_DIR) $(PROJECT_NAME).exe $(PROJECT_NAME)
-    
+	rm -f $(PROJECT_NAME).exe $(PROJECT_NAME) 	
