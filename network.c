@@ -65,7 +65,8 @@ void network_send_join(SOCKET sock, UIEvent *role)
     if (*role == EVENT_JOIN_PLAYER)
     {
         const char *msg =
-            "{\"type\":\"JOIN\",\"role\":\"JUGADOR\",\"jugador_id\":\"P1\"}\n";
+            //"{\"type\":\"JOIN\",\"role\":\"JUGADOR\",\"jugador_id\":\"P1\"}\n";
+            "{\"type\":\"JOIN\",\"role\":\"JUGADOR\"}\n";
 
         result = send(sock, msg, strlen(msg), 0);
         

@@ -18,7 +18,7 @@ public class Jugador {
     }
     
     public void moverDerecha(){
-        if (cannonX < 800){
+        if (cannonX < 1050){
         cannonX+=50;
         }
         

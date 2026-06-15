@@ -197,12 +197,14 @@ public class GameEngine extends Thread {
     } 
     if (ufo != null){
         for(Bala b:balasJugador){
+            
             if (overlapsUFO(b,ufo)){
                 ufo.matar();
                 b.desactivar();
                 jugador.agregarPuntos(ufo.getPuntos());
                 notifyUFOMuerto(ufo.getPuntos(), jugador.getPuntos());
-                ufo = null;
+                this.ufo = null;
+                break;
             }
         }
     }
@@ -303,7 +305,8 @@ public class GameEngine extends Thread {
 
     private boolean overlapsUFO(Bala b, UFO ufo) {
         int bx = b.getX(), by = b.getY();
-        int ufox = ufo.getX() * 75, ufoy = ufo.getY() * 55;
+        int ufox = ufo.getX()*75, ufoy = ufo.getY()*55;
+        //System.out.println("Bala: (" + bx + "," + by + ") UFO: (" + ufox + "," + ufoy + " -> " + (ufox+110) + "," + (ufoy+55) + ")");
         return bx >= ufox && bx <= ufox +110  && by >= ufoy && by <= ufoy + 55;
         }
     
@@ -323,7 +326,7 @@ public synchronized void moverJugador(String direction) {
     }
 public synchronized void shoot() {
         int id = balas.size() + 1;
-        balas.add(new Bala(id, jugador.getCannonX(), jugador.getCannonY(), "jugador"));
+        balas.add(new Bala(id, jugador.getCannonX()+45, jugador.getCannonY(), "jugador"));
     }
     
 

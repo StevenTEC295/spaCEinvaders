@@ -167,20 +167,20 @@ void DrawMenu(AppState *state, UIEvent *role, float ScreenWidth, float ScreenHei
 
         ClearBackground(BLACK);
 
-        DrawText("SELECCIONA MODO", (ScreenWidth/2)-225, 100, 30, WHITE);
+        DrawText("SELECCIONA MODO", (ScreenWidth/2)-135, 250, 30, WHITE);
         
         // +60 +100
-        Rectangle btn1 = {(ScreenWidth/2)-200, (ScreenHeight/2)-60, 200, 60};
+        Rectangle btn1 = {(ScreenWidth/2)-100, (ScreenHeight/2)-70, 200, 60};
         // = +100 del 1
-        Rectangle btn2 = {(ScreenWidth/2)-200, (ScreenHeight/2)+40, 200, 60};
+        Rectangle btn2 = {(ScreenWidth/2)-100, (ScreenHeight/2)+30, 200, 60};
 
         //+50 +20 del boton 1
         DrawRectangleRec(btn1, DARKBLUE);
-        DrawText("JUGADOR", (ScreenWidth/2)-175, (ScreenHeight/2)-40, 20, WHITE);
+        DrawText("JUGADOR", (ScreenWidth/2)-45, (ScreenHeight/2)-50, 20, WHITE);
 
         //+30 +20 del boton 2
         DrawRectangleRec(btn2, DARKGRAY);
-        DrawText("ESPECTADOR", (ScreenWidth/2)-170, (ScreenHeight/2)+60, 20, WHITE);
+        DrawText("ESPECTADOR", (ScreenWidth/2)-65, (ScreenHeight/2)+50, 20, WHITE);
 
         Vector2 m = GetMousePosition();
 
@@ -216,7 +216,7 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
 
         case GAME_PLAYER:
             if (strcmp(game->game_status,"GAME_OVER") != 0) {
-                ClearBackground(DARKBLUE);
+                ClearBackground(BLACK);
                 DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, 20, WHITE);
                 DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
                 DrawAliens(game->aliens, frame_time, assets);

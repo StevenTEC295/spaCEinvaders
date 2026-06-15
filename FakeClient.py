@@ -37,7 +37,7 @@ t = threading.Thread(target=receive_loop, daemon=True)
 t.start()
 
 # simular flujo inicial
-send({"type": "JOIN", "role": "JUGADOR", "jugador_id": "P1"})
+send({"type": "JOIN", "role": "JUGADOR", "jugador_id": "P2"})
 time.sleep(0.5)
 
 send({"type": "MOVE", "direction": "LEFT"})

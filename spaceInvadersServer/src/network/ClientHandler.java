@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.util.Map;
 import model.GameState;
 import patrones.JuegoObserver;
-
+import java.util.UUID;
 public class ClientHandler extends Thread implements JuegoObserver{
     
     private Socket socket;
@@ -25,6 +25,12 @@ public class ClientHandler extends Thread implements JuegoObserver{
         this.socket  = socket;
         this.engines = engines;
     }
+    
+
+    private String generarJugadorID() {
+        return "jugador-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+    
     @Override
     public void run(){
         try{
@@ -51,14 +57,14 @@ public class ClientHandler extends Thread implements JuegoObserver{
     
     }
     private void handleJoin(String json) {
-        // parsear con org.json o gson
+        
         System.out.println(json);
         JSONObject obj = new JSONObject(json);
         this.role = obj.getString("role");
         System.out.println(this.role);
         
         if (role.equals("JUGADOR")) {
-            this.jugadorID = obj.getString("jugador_id");
+            this.jugadorID = generarJugadorID();
             System.out.println(this.jugadorID);
             this.engine   = new GameEngine(jugadorID);
             engines.put(jugadorID, engine);

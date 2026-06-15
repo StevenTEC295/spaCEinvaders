@@ -22,10 +22,10 @@ public class Bunker {
     public static List<Bunker> createDefault() {
         List<Bunker> bunkers = new ArrayList<>();
         int row = 12;
-        bunkers.add(new Bunker(1,2, row));
-        bunkers.add(new Bunker(2,6, row));
-        bunkers.add(new Bunker(3,10, row));
-        bunkers.add(new Bunker(4,14, row));
+        bunkers.add(new Bunker(1,1, row));
+        bunkers.add(new Bunker(2,5, row));
+        bunkers.add(new Bunker(3,9, row));
+        bunkers.add(new Bunker(4,13, row));
         return bunkers;
     }
     public boolean isActive(){return active;}
