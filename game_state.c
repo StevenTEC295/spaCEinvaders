@@ -232,6 +232,10 @@ void process_message(const char* raw_json, GameState* state, AppState *UI) {
         //Designa el string de estado del juego a los structs
         if (status && status->valuestring)
             strncpy(state->game_status, status->valuestring, 19);
+         //Busca el objeto "wave"
+        cJSON* speed = cJSON_GetObjectItem(root, "alien_speed");
+        //Designa el valor númerico de la oleada a los structs
+        if (speed) state->speed = speed->valueint;
     }
     // Procesar el mensaje de JSON de "GAME_OVER"
     if (strcmp(type->valuestring, "GAME_OVER") == 0) {

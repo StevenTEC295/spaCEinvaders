@@ -16,6 +16,7 @@
 
 //"127.0.0.1" prueba JAVA "192.168.100.56"
 #define SERVER_IP "192.168.100.56"
+//#define SERVER_IP "192.168.1.155"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 10000
 #define SCREEN_WIDTH 1200

@@ -1,7 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOGDI
 #define NOUSER
-
+#include <synchapi.h>
 #include "raylib.h"
 #include "include/input.h"
 #include "include/network.h"
@@ -15,11 +15,32 @@
 // ── Configuración del control ─────────────────────────────────
 #define CONTROLLER_PORT   "COM8"
 #define CONTROLLER_BAUD   115200
-#define JOY_DEAD_ZONE     15      // margen alrededor del centro (128)
-#define JOY_CENTER        112
+#define JOY_DEAD_ZONE     20      // margen alrededor del centro (128)
+#define JOY_CENTER  120   // ← corregido
+// Prototipos
+static bool controller_read(int *jx, bool *fire);
+static bool serial_read_line(char *buf, int max_len);
+// Variables compartidas
+static int  g_jx   = JOY_CENTER;
+static bool g_fire = false;
+static HANDLE hThread = NULL;
+static bool ismove = false;
 
 static HANDLE hSerial = INVALID_HANDLE_VALUE;
 static bool   controller_ready = false;
+// Hilo de lectura
+static DWORD WINAPI controller_thread(LPVOID param) {
+    int  jx;
+    bool fire;
+    while (controller_ready) {
+        if (controller_read(&jx, &fire)) {
+            g_jx   = jx;
+            g_fire = fire;
+        }
+        //Sleep(0.5);
+    }
+    return 0;
+}
 
 // ── Inicializar puerto serial ─────────────────────────────────
 void controller_init(void) {
@@ -43,51 +64,70 @@ void controller_init(void) {
     dcb.Parity   = NOPARITY;
     SetCommState(hSerial, &dcb);
 
-   COMMTIMEOUTS timeouts = { 0 };
-    timeouts.ReadIntervalTimeout        = MAXDWORD;
-    timeouts.ReadTotalTimeoutMultiplier = 0;
-    timeouts.ReadTotalTimeoutConstant   = 0;
-    SetCommTimeouts(hSerial, &timeouts);
+  
 
+// En controller_init(), cambia los timeouts:
+COMMTIMEOUTS timeouts = { 0 };
+timeouts.ReadIntervalTimeout        = 50;   // espera hasta 50ms entre bytes
+timeouts.ReadTotalTimeoutMultiplier = 0;
+timeouts.ReadTotalTimeoutConstant   = 200;  // timeout total de 200ms por lectura
+SetCommTimeouts(hSerial, &timeouts);
     controller_ready = true;
     printf("[Controller] Control conectado en %s\n", CONTROLLER_PORT);
     printf("[Controller] Handle valido: %s\n", hSerial != INVALID_HANDLE_VALUE ? "SI" : "NO"); 
+    hThread = CreateThread(NULL, 0, controller_thread, NULL, 0, NULL);
 }
+
 
 void controller_close(void) {
     if (hSerial != INVALID_HANDLE_VALUE) {
         CloseHandle(hSerial);
         hSerial = INVALID_HANDLE_VALUE;
         controller_ready = false;
+        if (hThread) {
+            WaitForSingleObject(hThread, 1000);
+            CloseHandle(hThread);
+        }
     }
 }
 
-// ── Leer línea del serial ─────────────────────────────────────
 static bool serial_read_line(char *buf, int max_len) {
     int  i = 0;
     char c;
     DWORD read_count;
 
     while (i < max_len - 1) {
-        if (!ReadFile(hSerial, &c, 1, &read_count, NULL) || read_count == 0)
+        BOOL ok = ReadFile(hSerial, &c, 1, &read_count, NULL);
+        if (!ok) {
+            printf("[Serial] ReadFile error: %lu\n", GetLastError());
             return false;
-         printf("[Serial] char: %c\n", c);
+        }
+        if (read_count == 0) {
+            printf("[Serial] ReadFile timeout (0 bytes)\n");
+            return false;
+        }
         if (c == '\n') break;
         if (c != '\r') buf[i++] = c;
     }
     buf[i] = '\0';
     return i > 0;
 }
-
-// ── Leer estado del control ───────────────────────────────────
 static bool controller_read(int *jx, bool *fire) {
     if (!controller_ready) return false;
 
     char line[64];
-    int  btn = 0, chk = 0;
+    if (!serial_read_line(line, sizeof(line))) {
+        printf("[Controller] serial_read_line fallo (sin datos o timeout)\n");
+        return false;
+    }
 
-    if (!serial_read_line(line, sizeof(line))) return false;
-    if (sscanf(line, "JX: %d | BTN: %d | CHK: %d", jx, &btn, &chk) != 3) return false;
+    //printf("[Controller] Linea recibida: '%s'\n", line);  // ← ver qué llega exactamente
+
+    int btn = 0, chk = 0;
+    if (sscanf(line, "JX: %d | BTN: %d | CHK: %d", jx, &btn, &chk) != 3) {
+        printf("[Controller] sscanf falló en parsear\n");
+        return false;
+    }
 
     *fire = (btn == 1);
     return true;
@@ -109,21 +149,24 @@ void input_handle(SOCKET sock, UIEvent *role, GameState *game) {
     }
     
     // ── Control físico ────────────────────────────────────────
-    int  jx   = JOY_CENTER;
-    bool fire = false;
-
-    if (controller_read(&jx, &fire)) {
-        printf("[Controller] JX: %d | FIRE: %d\n", jx, fire);
-        // Joystick: valores bajos = derecha, valores altos = izquierda
-        // (invertido por hardware, se interpreta al revés)
-        if (jx < JOY_CENTER - JOY_DEAD_ZONE) {
-            network_send_right(sock);   // valores bajos → derecha
-        } else if (jx > JOY_CENTER + JOY_DEAD_ZONE) {
-            network_send_left(sock);    // valores altos → izquierda
-        }
-
-        if (fire) {
-            network_send_shoot(sock);
-        }
+    if (g_jx < 4) {
+        
+        network_send_right(sock);
+        printf("Me moví a la derecha\n");
+        Sleep(game->speed);
+            
+        
+        
+    } else if (g_jx > 250) {
+        network_send_left(sock);
+        printf("Me moví a la izquierda\n");
+        Sleep(game->speed);
     }
+    if (g_fire) {
+        printf("[Controller] DISPARANDO!\n");
+        network_send_shoot(sock);
+        g_fire = false; // resetear para no disparar infinito
+        Sleep(game->speed);
+    }
+
 }

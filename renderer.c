@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 #include <string.h>
 #include "include/renderer.h"
 #include "include/structs.h"
@@ -109,7 +110,7 @@ void DrawBullets(GameState* game, Assets *assets)
 void DrawUFO (GameState* game, Assets *assets){
     if (game->ufo.exists)
     { 
-        DrawTexture(assets->UFO,game->ufo.x,game->ufo.y,WHITE);
+        DrawTexture(assets->UFO,game->ufo.x * (assets->UFO.width),game->ufo.y * (assets->UFO.height),WHITE);
     }
 }
 

@@ -41,12 +41,12 @@ public class GameEngine extends Thread {
         this.observers  = new ArrayList<>(); 
         this.ufo = null;
         this.wave=1;
-        this.velocidad = 250;
+        this.velocidad = 400;
         this.running = true;
         this.alienDirection = 1;
         this.ufoDirection = 1;
         this.tickCount = 0;
-        this.alienMovEach =2;
+        this.alienMovEach =3;
         this.ufoTickCount = 0;
         this.ufoMovEach = 2;
         
@@ -301,12 +301,14 @@ public synchronized void moverJugador(String direction) {
         if (direction.equals("RIGHT")) jugador.moverDerecha();
     }
 public synchronized void shoot() {
-        boolean alreadyShooting = balas.stream()
-            .anyMatch(b -> b.getOwner().equals("jugador") && b.isActivo());
-        if (!alreadyShooting) {
+        //boolean alreadyShooting = balas.stream()
+            //.anyMatch(b -> b.getOwner().equals("jugador") && b.isActivo());
+        /*if (!alreadyShooting) {
             int id = balas.size() + 1;
-            balas.add(new Bala(id, jugador.getCannonX(), 540, "jugador"));
-        }
+            balas.add(new Bala(id, jugador.getCannonX(), jugador.getCannonY(), "jugador"));
+        }*/
+        int id = balas.size() + 1;
+        balas.add(new Bala(id, jugador.getCannonX(), jugador.getCannonY(), "jugador"));
     }
     
 

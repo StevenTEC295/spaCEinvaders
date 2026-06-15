@@ -68,6 +68,7 @@ typedef struct {
     int wave;
     char game_status[20];
     GameOver gameOver;
+    int speed;
 } GameState;
 
 
