@@ -149,7 +149,7 @@ void input_handle(SOCKET sock, UIEvent *role, GameState *game) {
     }
     
     // ── Control físico ────────────────────────────────────────
-    if (g_jx < 4) {
+    if (g_jx < 20) {
         
         network_send_right(sock);
         printf("Me moví a la derecha\n");
@@ -157,7 +157,7 @@ void input_handle(SOCKET sock, UIEvent *role, GameState *game) {
             
         
         
-    } else if (g_jx > 250) {
+    } else if (g_jx > 200) {
         network_send_left(sock);
         printf("Me moví a la izquierda\n");
         Sleep(game->speed);
