@@ -53,7 +53,7 @@ typedef struct {
 //----------------GAME_OVER----------------
 typedef struct {
     int final_score;
-    char reason[20];
+    char reason[30];
 }GameOver;
 
 // ---------------- GAME STATE ----------------
@@ -94,6 +94,14 @@ typedef enum {
     EVENT_JOIN_SPECTATOR
 } UIEvent;
 
+//===UI Timer (Temporizador para animaciones)=========
+typedef struct
+{
+    bool active;
+    float timer;
+    float duration;
+    int lastWave;
+} TimerAnimation;
 
 #endif
 

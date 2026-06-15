@@ -6,10 +6,12 @@
 #include <stdbool.h>
 #include <math.h>
 #include <string.h>
+#include "include/constantes.h"
 #include "include/renderer.h"
 #include "include/structs.h"
 #include "include/assets.h"
 #include "include/network.h"
+
 
 
 //================================================
@@ -159,6 +161,31 @@ void DrawLives(GameState* game, Assets *assets, float ScreenWidth){
 }
 
 //================================================
+//========FUNCIÓN DIBUJAR MENSAJE OLEADA =========
+//================================================
+void DrawWaves(GameState* game, Assets *assets, float ScreenWidth){
+    // Variables
+    
+    if (game->wave != WaveMessage.lastWave){
+        WaveMessage.active = true;
+        WaveMessage.timer = 0.0f;
+        WaveMessage.lastWave = game->wave; //Copia la oleada anterior
+    }
+
+    if (WaveMessage.active){
+        if (WaveMessage.timer >= WaveMessage.duration){
+            WaveMessage.active = false;
+        }
+
+    }
+
+    if (WaveMessage.active){
+        DrawText(TextFormat("OLEADA %i", (int)game->wave),(ScreenWidth - MeasureText(TextFormat("OLEADA %i", (int)game->wave), 30)) / 2, 100,30,YELLOW);
+    }
+ 
+}
+
+//================================================
 //============FUNCIÓN DIBUJAR MENÚ ===============
 //================================================
 void DrawMenu(AppState *state, UIEvent *role, float ScreenWidth, float ScreenHeight, SOCKET sock){
@@ -201,9 +228,7 @@ void DrawMenu(AppState *state, UIEvent *role, float ScreenWidth, float ScreenHei
         }
     }
 }
-void DrawGameOver(){
-    DrawText("GAME OVER", 300, 200, 40, RED);
-}
+
 //Función principal de dibujo
 void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, float ScreenWidth, float ScreenHeight, int frame_time, SOCKET sock){
     BeginDrawing();
@@ -225,6 +250,7 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
                 DrawPlayer (game, assets);
                 DrawScore(game);
                 DrawLives(game, assets, ScreenWidth);
+                DrawWaves(game, assets, ScreenWidth);
                 
             } 
 
@@ -232,18 +258,17 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
 
         case GAME_OVER:
             ClearBackground(DARKBLUE);
-            DrawText("GAME OVER", 300, 200, 40, RED);
-            DrawText(game->gameOver.reason, 400, 260, 20, WHITE);
+            DrawText("GAME OVER", (ScreenWidth - MeasureText("GAME OVER", 40))/2, 300, 40, RED);
+            DrawText(game->gameOver.reason, (ScreenWidth - MeasureText(game->gameOver.reason, 20))/2, 360, 20, WHITE);
             char scoreText[64];
             sprintf(scoreText, "Score: %d", game->gameOver.final_score);
-            DrawText(scoreText, 400, 300, 20, WHITE);
+            DrawText(scoreText, (ScreenWidth - MeasureText(scoreText, 20))/2, 400, 20, WHITE);
             break;
 
         case GAME_SPECTATOR:
             ClearBackground(LIGHTGRAY);
             DrawText("MODO ESPECTADOR", ScreenWidth/2, 20, 20, WHITE);
             ClearBackground(DARKBLUE);
-            DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, 20, WHITE);
             DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
             DrawAliens(game->aliens, frame_time, assets);
             DrawUFO(game, assets);

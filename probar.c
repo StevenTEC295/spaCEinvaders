@@ -12,10 +12,12 @@
 #include "include/game_state.h"
 #include "include/renderer.h"
 #include "include/assets.h"
+#include "include/structs.h"
+#include "include/constantes.h"
 #include "include/input.h"
 
 //"127.0.0.1" prueba JAVA "192.168.100.56"
-#define SERVER_IP "192.168.100.56"
+#define SERVER_IP "192.168.0.105"
 //#define SERVER_IP "192.168.1.155"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 10000
@@ -123,10 +125,11 @@ int main(void)
     GameState game = {0};
     printf("Entrando al loop principal\n");
     //PARSER JSON
-    while (!WindowShouldClose()|| game.game_status != "FINISHED"){
+    while (!WindowShouldClose()){
         
         //RENDER Temporizador animaciones
         alienTimer += GetFrameTime();
+        WaveMessage.timer += GetFrameTime();
 
         if (alienTimer >= 0.5f)
         {

@@ -244,7 +244,7 @@ void process_message(const char* raw_json, GameState* state, AppState *UI) {
         cJSON* reason = cJSON_GetObjectItem(root, "reason");
         //Designa el string de razon de perdida a los structs
         if (reason && reason->valuestring)
-            strncpy(state->gameOver.reason, reason->valuestring, 19);
+            strncpy(state->gameOver.reason, reason->valuestring, 30);
 
         //Busca el objeto "final_score"
         cJSON* final_score = cJSON_GetObjectItem(root, "final_score");
