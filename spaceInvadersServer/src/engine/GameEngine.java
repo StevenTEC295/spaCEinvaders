@@ -10,7 +10,9 @@ import model.Jugador;
 import model.GameState;
 import patrones.AlienFactory;
 import patrones.JuegoObserver;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+// Agregar campo al inicio de la clase
 
 public class GameEngine extends Thread {
     
@@ -31,13 +33,14 @@ public class GameEngine extends Thread {
     private int ufoTickCount;
 
     // agregar con los demás campos al inicio de la clase
-    private int alienShootEach = 2; // dispara cada 15 ticks
+    private int alienShootEach = 4; // dispara cada 15 ticks
     private int alienShootTick = 0;
+    private Thread balasThread;
     public GameEngine(String jugadorId){
         this.jugador = new Jugador(jugadorId, 400);
         this.aliens = AlienFactory.createWave(1);
         this.bunkers = Bunker.createDefault();
-        this.balas = new ArrayList<>();
+        this.balas = new CopyOnWriteArrayList<>();
         this.observers  = new ArrayList<>(); 
         this.ufo = null;
         this.wave=1;
@@ -46,16 +49,28 @@ public class GameEngine extends Thread {
         this.alienDirection = 1;
         this.ufoDirection = 1;
         this.tickCount = 0;
-        this.alienMovEach =3;
+        this.alienMovEach =4;
         this.ufoTickCount = 0;
         this.ufoMovEach = 2;
-        
+        balasThread = new Thread(() -> {
+        while (running) {
+            synchronized (this) {
+                balas.forEach(Bala::mover);
+                balas.removeIf(b -> !b.isActivo() || b.isFueraAlcance());
+            }
+            try { Thread.sleep(60); }  // balas a 50ms independiente del game loop
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+        }
+        });
+        balasThread.setDaemon(true);
+
         
     }
     private volatile GameState lastState;
-    @Override
     
+    @Override
     public void run(){
+        balasThread.start();
         while(running){
             update();
             checkCollisions();
@@ -71,7 +86,7 @@ public class GameEngine extends Thread {
     }
     private void update(){
         moveAliens();
-        moveBalas();
+        //moveBalas();
         updateUFO();
         alienesDisparan();
     }
@@ -105,7 +120,7 @@ public class GameEngine extends Thread {
     }
     
     private void updateUFO() {
-        // Si no existe, posibilidad de aparecer
+        UFO ufoLocal = this.ufo; 
         if (ufo == null) {
             
             double chance = Math.random();
@@ -124,7 +139,7 @@ public class GameEngine extends Thread {
         ufoTickCount++;
         if (ufoTickCount < ufoMovEach) return; // no mover todavía
         ufoTickCount = 0;  
-        // mover UFO
+        
         if(ufoDirection ==1){
             ufo.setX(ufo.getX() + 1);
             System.out.println("UFO se movió 1 posición");
@@ -133,7 +148,7 @@ public class GameEngine extends Thread {
             ufo.setX(ufo.getX()-1);
         }
 
-        // eliminar si sale de pantalla
+        
         if (ufo.getX() > 20) {
             ufo.matar();
             ufo = null;
@@ -148,7 +163,7 @@ public class GameEngine extends Thread {
         }
         }
     }
-    private void checkCollisions(){
+    private synchronized void checkCollisions(){
     List<Bala> balasJugador = balas.stream().filter(b->b.getOwner().equals("jugador") && b.isActivo()).collect(Collectors.toList());
     for(Bala b:balasJugador){
         for (Alien a:aliens){
@@ -201,7 +216,7 @@ public class GameEngine extends Thread {
             }
         }
     }
-    boolean overlapsFondo = aliens.stream().filter(Alien::isVivo).anyMatch(a -> a.getY() >= 20);
+    boolean overlapsFondo = aliens.stream().filter(Alien::isVivo).anyMatch(a -> a.getY() >= 17);
 
         if (overlapsFondo) {
             
@@ -231,17 +246,17 @@ public class GameEngine extends Thread {
     if (alienShootTick < alienShootEach) return;
     alienShootTick = 0;
 
-    // filtrar aliens vivos
+    
     List<Alien> vivos = aliens.stream()
             .filter(Alien::isVivo)
             .collect(Collectors.toList());
 
     if (vivos.isEmpty()) return;
 
-    // elegir uno al azar
+   
     Alien tirador = vivos.get((int)(Math.random() * vivos.size()));
 
-    // crear bala desde la posición del alien
+    
     int id = balas.size() + 1;
     int bx = tirador.getX() * 75 + 37;
     int by = tirador.getY() * 55 + 55;
@@ -260,10 +275,13 @@ public class GameEngine extends Thread {
             aliens    = AlienFactory.createWave(wave);
             velocidad     = Math.max(40, velocidad - 10); // se acelera cada oleada
         }
-        if (wave >= 3){
+        //Para versiones posteriores, incrementar la cantidad de oleadas
+        /*
+        if (wave >= 3){ 
+            notifyGameWon(wave, jugador.getPuntos());
             try { Thread.sleep(100); } catch (InterruptedException ignored) {}
             detener();
-        }
+        }*/
     }
 
     private void notifyAlienMuerto(int id, int puntos, int jugadorPuntos) {
@@ -279,7 +297,7 @@ public class GameEngine extends Thread {
 
     private boolean overlaps(Bala b, Alien a) {
     int bx = b.getX(), by = b.getY();
-    int ax = a.getX() * 75, ay = a.getY() * 55; // mismo que el renderer
+    int ax = a.getX() * 75, ay = a.getY() * 55;
     return bx >= ax && bx <= ax + 75 && by >= ay && by <= ay + 55;
 }
 
@@ -304,12 +322,6 @@ public synchronized void moverJugador(String direction) {
         if (direction.equals("RIGHT")) jugador.moverDerecha();
     }
 public synchronized void shoot() {
-        //boolean alreadyShooting = balas.stream()
-            //.anyMatch(b -> b.getOwner().equals("jugador") && b.isActivo());
-        /*if (!alreadyShooting) {
-            int id = balas.size() + 1;
-            balas.add(new Bala(id, jugador.getCannonX(), jugador.getCannonY(), "jugador"));
-        }*/
         int id = balas.size() + 1;
         balas.add(new Bala(id, jugador.getCannonX(), jugador.getCannonY(), "jugador"));
     }
@@ -335,9 +347,9 @@ public synchronized void shoot() {
         observers.forEach(o -> o.onGameOver(reason, puntos));
     }
     
-    private void notifyGameWon(int wave, int puntos) {
+    /*private void notifyGameWon(int wave, int puntos) {
         observers.forEach(o->o.onGameWon(wave, puntos));
-    }
+    }*/
     public synchronized void addObserver(JuegoObserver o) { observers.add(o); }
     public synchronized void removeObserver(JuegoObserver o) { observers.remove(o); }
     private void notifyStateChanged() {
@@ -359,13 +371,14 @@ public synchronized void shoot() {
     }  
 private void triggerGameOver(String reason) {
     notifyGameOver(reason, jugador.getPuntos());
-    try { Thread.sleep(100); } catch (InterruptedException ignored) {} // dar tiempo al socket
+    try { Thread.sleep(100); } catch (InterruptedException ignored) {} 
     detener();
 }
 public GameState getLastState() { return lastState; }
     
-    public synchronized void detener() {
+public synchronized void detener() {
     this.running = false;
+    if (balasThread != null) balasThread.interrupt();
 }
 
 public boolean isRunning(){

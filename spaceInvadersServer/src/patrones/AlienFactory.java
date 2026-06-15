@@ -25,14 +25,12 @@ public class AlienFactory {
         List<Alien> aliens = new ArrayList<>();
         int id = 1;
         int[][] formacion = {
-            {40, 10},  
-            {20, 20},
-            {20, 20},
-            {10, 10},
-            {10, 10}
+            {40},  
+            {20},
+            {10}
         };
-        for (int row = 0; row < 5; row++) {
-            for (int col = 0; col < 11; col++) {
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 5; col++) {
                 int puntos = formacion[row][0] + (wave - 1) * 5; 
                 String type = row == 0 ? "pulpo" : (row < 3 ? "cangrejo" : "calamar");
                 aliens.add(create(type, id++, col, row, puntos));
