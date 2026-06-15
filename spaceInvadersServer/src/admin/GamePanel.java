@@ -55,6 +55,11 @@ public class GamePanel extends JPanel {
         Thread listener = new Thread(() -> {
             while (activo) {
                 GameState state = engine.getLastState();
+                // Si el engine se detuvo, iniciar cierre del panel
+                if (!engine.isRunning()) {
+                    cerrarPanel();
+                    break;
+                }
                 if (state != null) {
                     // capturar valores antes de entrar al EDT
                     String status  = state.status;
@@ -90,7 +95,33 @@ public class GamePanel extends JPanel {
         listener.start();
     }
 
-    
+    private void cerrarPanel() {
+        activo = false;
+
+        SwingUtilities.invokeLater(() -> {
+            // Feedback visual: borde rojo + etiqueta antes de remover
+            setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.RED, 2),
+                "Partida: " + playerId + "  [DESCONECTADO]",
+                0, 0, new Font("Arial", Font.BOLD, 13)
+            ));
+            lblStatus.setText("Estado: DESCONECTADO");
+            lblStatus.setForeground(Color.RED);
+            repaint();
+
+            // Esperar 2 segundos para que el admin vea la desconexión, luego remover
+            Timer timer = new Timer(2000, e -> {
+                Container padre = getParent();
+                if (padre != null) {
+                    padre.remove(this);
+                    padre.revalidate();
+                    padre.repaint();
+                }
+            });
+            timer.setRepeats(false);
+            timer.start();
+        });
+    }
     public void detener() { activo = false; }
 
 
@@ -173,6 +204,7 @@ public class GamePanel extends JPanel {
 
             Alien alien = AlienFactory.create(type, id, x, y, points);
             engine.addAlien(alien);
+            System.out.println("Exito Alien creado");
 
             JOptionPane.showMessageDialog(this,
                 "Alien creado: " + type + " (" + points + " pts) en (" + x + "," + y + ")",

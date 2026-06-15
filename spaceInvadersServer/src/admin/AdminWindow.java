@@ -4,6 +4,7 @@ import engine.GameEngine;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
+import java.util.Arrays;
 
 public class AdminWindow extends JFrame {
 
@@ -51,7 +52,6 @@ public class AdminWindow extends JFrame {
     private void checkNuevosJugadores() {
     SwingUtilities.invokeLater(() -> {
         engines.forEach((jugadorId, engine) -> {
-            // solo agregar si no existe ya un panel para este jugador
             boolean yaExiste = false;
             for (Component c : contentPanel.getComponents()) {
                 if (c instanceof GamePanel gp && gp.getPlayerId().equals(jugadorId)) {
@@ -59,17 +59,22 @@ public class AdminWindow extends JFrame {
                     break;
                 }
             }
-            if (!yaExiste) {
+            if (!yaExiste && engine.isRunning()) {   // solo crear si está activo
                 GamePanel panel = new GamePanel(jugadorId, engine);
                 panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
                 contentPanel.add(panel);
                 contentPanel.add(Box.createVerticalStrut(8));
                 contentPanel.revalidate();
                 contentPanel.repaint();
-                lblConnected.setText("Partidas activas: " + engines.size());
             }
         });
+
+        // Contar solo paneles vivos (GamePanel presentes en el layout)
+        long activos = Arrays.stream(contentPanel.getComponents())
+                             .filter(c -> c instanceof GamePanel)
+                             .count();
+        lblConnected.setText("Partidas activas: " + activos);
     });
-    }
+}
     
 }

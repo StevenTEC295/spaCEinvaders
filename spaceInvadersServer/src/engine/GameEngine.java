@@ -171,8 +171,10 @@ public class GameEngine extends Thread {
             jugador.impacto();
             notifyJugadorImpacto(jugador.getVidas(), jugador.getCannonX());
             if(jugador.isMuerto()){
-                running = false;
-                notifyGameOver("SIN VIDAS", jugador.getPuntos());
+                
+                triggerGameOver("SIN VIDAS");
+                
+                detener();
             
             }
         
@@ -202,8 +204,9 @@ public class GameEngine extends Thread {
     boolean overlapsFondo = aliens.stream().filter(Alien::isVivo).anyMatch(a -> a.getY() >= 20);
 
         if (overlapsFondo) {
+            
+            triggerGameOver("LOS ALIENS TE ALCANZARON");
             detener();
-            notifyGameOver("LOS ALIENS TE ALCANZARON", jugador.getPuntos());
         }
     for (Bala b : balas) {
 
@@ -258,7 +261,7 @@ public class GameEngine extends Thread {
             velocidad     = Math.max(40, velocidad - 10); // se acelera cada oleada
         }
         if (wave >= 3){
-            notifyGameWon(wave, jugador.getPuntos());
+            try { Thread.sleep(100); } catch (InterruptedException ignored) {}
             detener();
         }
     }
@@ -354,13 +357,20 @@ public synchronized void shoot() {
         s.status     = running ? "RUNNING" : "FINISHED";
         return s;
     }  
-
+private void triggerGameOver(String reason) {
+    notifyGameOver(reason, jugador.getPuntos());
+    try { Thread.sleep(100); } catch (InterruptedException ignored) {} // dar tiempo al socket
+    detener();
+}
 public GameState getLastState() { return lastState; }
     
     public synchronized void detener() {
     this.running = false;
 }
 
+public boolean isRunning(){
+    return running;
+}
 
     
 }
