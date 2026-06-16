@@ -186,6 +186,85 @@ void DrawWaves(GameState* game, Assets *assets, float ScreenWidth){
 }
 
 //================================================
+//=FUNCIÓN DIBUJAR SELECTOR JUGADOR DE ESPECTADOR=
+//================================================
+void DrawViewerEntry(AppState *state, UIEvent *role,GameState *game, float ScreenWidth, float ScreenHeight, SOCKET sock){
+    // ============= SELECTOR =================
+    if (*state == SELECTOR) {
+        ClearBackground(BLACK);
+
+        static char inputText[28 + 1] = "\0";
+        static int letterCount = 0;
+        static bool active = true;
+
+        //Instrucciones
+        DrawText("ESCRIBE ID DE JUGADOR QUE DESEAS VER", (ScreenWidth - MeasureText("ESCRIBE ID DE JUGADOR QUE DESEAS VER", 30)) / 2, 250, 30, WHITE);
+        //Input
+        Rectangle inputBox = {(ScreenWidth/2)-150, (ScreenHeight/2)-120, 300, 50};
+
+        Vector2 m = GetMousePosition();
+        bool mouseOnText = CheckCollisionPointRec(m, inputBox);
+
+        if (mouseOnText) SetMouseCursor(MOUSE_CURSOR_IBEAM);
+        else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+
+        if (mouseOnText)
+        {
+            int key = GetCharPressed();
+
+            while (key > 0)
+            {
+                if ((key >= 32) && (key <= 125) && (letterCount < 28))
+                {
+                    inputText[letterCount] = (char)key;
+                    inputText[letterCount + 1] = '\0';
+                    letterCount++;
+                }
+
+                key = GetCharPressed();
+            }
+
+            if (IsKeyPressed(KEY_BACKSPACE))
+            {
+                if (letterCount > 0)
+                {
+                    letterCount--;
+                    inputText[letterCount] = '\0';
+                }
+            }
+        }
+        DrawRectangleRec(inputBox, DARKGRAY);
+        DrawRectangleLines(inputBox.x, inputBox.y, inputBox.width, inputBox.height, WHITE);
+        DrawText(inputText, inputBox.x + 10, inputBox.y + 15, 20, RAYWHITE);
+
+        
+        //Boton de enviar
+        Rectangle btn1 = {(ScreenWidth/2)-100, (ScreenHeight/2)-70, 200, 60};
+        DrawRectangleRec(btn1, DARKBLUE);
+        DrawText("ENVIAR", (ScreenWidth/2)-45, (ScreenHeight/2)-50, 20, WHITE);
+
+        
+        if (CheckCollisionPointRec(m, btn1) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            *role = EVENT_JOIN_SPECTATOR;
+            int check = network_send_join(sock, role, inputText);
+            if ((check == 1) && (strcmp(game->wrongID.message,"Partida no encontrada") != 0)){
+                *state = GAME_SPECTATOR;
+            }
+            else {
+                *state = SELECTOR;
+                DrawText("ID DE JUGADOR INVALIDO", (ScreenWidth - MeasureText("ID DE JUGADOR INVALIDO", 10)) / 2, 450, 10, WHITE);
+            }
+            //printf("ID jugador ingresado: %s\n", inputText);
+            //*role = EVENT_JOIN_SPECTATOR;
+            //*state = GAME_SPECTATOR;
+            //network_send_join(sock, role); 
+        }
+    }
+    
+}
+
+//================================================
 //============FUNCIÓN DIBUJAR MENÚ ===============
 //================================================
 void DrawMenu(AppState *state, UIEvent *role, float ScreenWidth, float ScreenHeight, SOCKET sock){
@@ -216,14 +295,12 @@ void DrawMenu(AppState *state, UIEvent *role, float ScreenWidth, float ScreenHei
             if (CheckCollisionPointRec(m, btn1)) {
                 *role = EVENT_JOIN_PLAYER;
                 *state = GAME_PLAYER;
-                network_send_join(sock, role); 
+                network_send_join(sock, role, NULL); 
                 
             }
 
             if (CheckCollisionPointRec(m, btn2)) {
-                *role = EVENT_JOIN_SPECTATOR;
-                *state = GAME_SPECTATOR;
-                network_send_join(sock, role); 
+                *state = SELECTOR;
             }
         }
     }
@@ -237,6 +314,10 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
     {
         case MENU:
             DrawMenu(state, role, ScreenWidth, ScreenHeight, sock);
+            break;
+
+        case SELECTOR:
+            DrawViewerEntry(state, role, game, ScreenWidth, ScreenHeight, sock);
             break;
 
         case GAME_PLAYER:
@@ -266,9 +347,8 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
             break;
 
         case GAME_SPECTATOR:
-            ClearBackground(LIGHTGRAY);
-            DrawText("MODO ESPECTADOR", ScreenWidth/2, 20, 20, WHITE);
             ClearBackground(DARKBLUE);
+            DrawText("MODO ESPECTADOR", (ScreenWidth - MeasureText("MODO ESPECTADOR", 20)) / 2, 20, 20, WHITE);
             DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
             DrawAliens(game->aliens, frame_time, assets);
             DrawUFO(game, assets);

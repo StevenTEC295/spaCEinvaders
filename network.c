@@ -57,36 +57,36 @@ SOCKET connect_server(const char *ip, int port) {
 }
 
 //Envío de mensajes al escoger Jugador o Espectador
-void network_send_join(SOCKET sock, UIEvent *role)
+int network_send_join(SOCKET sock, UIEvent *role, const char *id_player)
 {
     int result;
+        char msg[128];
 
-    printf("Role = %d\n", *role);
-    if (*role == EVENT_JOIN_PLAYER)
-    {
-        const char *msg =
-            //"{\"type\":\"JOIN\",\"role\":\"JUGADOR\",\"jugador_id\":\"P1\"}\n";
-            "{\"type\":\"JOIN\",\"role\":\"JUGADOR\"}\n";
+        if (*role == EVENT_JOIN_PLAYER)
+        {
+            snprintf(msg, sizeof(msg),
+                    "{\"type\":\"JOIN\",\"role\":\"JUGADOR\"}\n");
+        }
+        else if (*role == EVENT_JOIN_SPECTATOR)
+        {
+            snprintf(msg, sizeof(msg),
+                    "{\"type\":\"JOIN\",\"role\":\"SPECTATOR\",\"watch_player\":\"%s\"}\n",
+                    id_player);
+        }
+        else
+        {
+            return 0; // estado inválido
+        }
 
         result = send(sock, msg, strlen(msg), 0);
-        
-    }
-    else if (*role == EVENT_JOIN_SPECTATOR)
-    {
-        const char *msg =
-            "{\"type\":\"JOIN\",\"role\":\"SPECTATOR\",\"watch_player\":\"P2\"}\n";;
 
-        result = send(sock, msg, strlen(msg), 0);
-    }
-    else
-    {
-        return;
-    }
+        if (result == SOCKET_ERROR)
+        {
+            printf("Error enviando JOIN: %d\n", WSAGetLastError());
+            return 0;
+        }
 
-    if (result == SOCKET_ERROR)
-    {
-        printf("Error enviando JOIN: %d\n", WSAGetLastError());
-    }
+    return 1;
 }
 
 //==========Inputs==============

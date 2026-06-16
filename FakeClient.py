@@ -1,7 +1,7 @@
 # fake_client.py
 import socket, json, time, threading
 
-HOST = "192.168.100.56"
+HOST = "192.168.1.86"
 PORT = 8080
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

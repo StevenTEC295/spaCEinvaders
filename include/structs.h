@@ -56,6 +56,12 @@ typedef struct {
     char reason[30];
 }GameOver;
 
+
+//----------------WRONG ID----------------
+typedef struct {
+    char message[30];
+}WrongID;
+
 // ---------------- GAME STATE ----------------
 typedef struct {
     Player player;
@@ -68,6 +74,7 @@ typedef struct {
     int wave;
     char game_status[20];
     GameOver gameOver;
+    WrongID wrongID;
     int speed;
 } GameState;
 
@@ -83,6 +90,7 @@ typedef enum {
     MENU,
     GAME_PLAYER,
     GAME_SPECTATOR,
+    SELECTOR,
     GAME_OVER,
     GAME_WON
 } AppState;

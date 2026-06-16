@@ -251,13 +251,20 @@ void process_message(const char* raw_json, GameState* state, AppState *UI) {
         //Designa el valor númerico de la oleada a los structs
         if (final_score) state->gameOver.final_score = final_score->valueint;
         
+        // Cambiar estado de la pantalla
         *UI = GAME_OVER;
-        // opcional: cambiar estado del juego
-        //strncpy(state->game_status, "GAME_OVER", sizeof(state->game_status) - 1);
-        //state->game_status[sizeof(state->game_status) - 1] = '\0';
-    }
-    
 
+    }
+
+    // Procesar mensaje de JSON de "ERROR"
+    if (strcmp(type->valuestring, "ERROR") == 0) {
+        //Busca el objeto "message"
+        cJSON* message = cJSON_GetObjectItem(root, "message");
+        //Designa el string de razon de perdida a los structs
+        if (message && message->valuestring)
+            strncpy(state->wrongID.message, message->valuestring, 30);
+    
+    }
 
     //Libera el árbol JSON (Liberar memoria reservada)
     cJSON_Delete(root);

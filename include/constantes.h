@@ -3,8 +3,6 @@
 
 #include "structs.h"
 
-typedef int TEST_COMPILA;
-
 extern TimerAnimation WaveMessage;
 
 #endif

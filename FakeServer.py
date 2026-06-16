@@ -2,7 +2,7 @@ import socket, json, time,random
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server.bind(("127.0.0.1", 8080))
+server.bind(("192.168.1.86", 8080))
 server.listen(1)
 
 print("Esperando cliente C...")

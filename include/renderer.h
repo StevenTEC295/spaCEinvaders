@@ -16,4 +16,5 @@ void DrawPlayer (GameState* game, Assets *assets);
 void DrawScore(GameState* game);
 void DrawLives(GameState* game, Assets *assets, float ScreenWidth);
 void DrawWaves(GameState* game, Assets *assets, float ScreenWidth);
+void DrawViewerEntry(AppState *state, UIEvent *role,GameState *game, float ScreenWidth, float ScreenHeight, SOCKET sock);
 #endif

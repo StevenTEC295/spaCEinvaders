@@ -17,7 +17,7 @@
 #include "include/input.h"
 
 //"127.0.0.1" prueba JAVA "192.168.100.56"
-#define SERVER_IP "192.168.0.105"
+#define SERVER_IP "192.168.1.86"
 //#define SERVER_IP "192.168.1.155"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 10000
@@ -47,8 +47,8 @@ DWORD WINAPI network_thread (LPVOID arg){
 
         if (bytes > 0) {
             //===Imprimir lo recibido por el server======
-            //buffer[bytes] = '\0';
-            //printf("MENSAJE SERVER:\n%s\n", buffer);
+            buffer[bytes] = '\0';
+            printf("MENSAJE SERVER:\n%s\n", buffer);
             
             //===Bloquear buffer a este hilo hasta que termine de copiar===
             EnterCriticalSection(&cs);
@@ -139,12 +139,6 @@ int main(void)
 
         //RENDER Dibujar el juego 
         DrawGame(&state, &role, &game, &assets, SCREEN_WIDTH, SCREEN_HEIGHT, alienFrame,sock);
-
-        /*//Enviar mensaje de join
-        if (!joined && role != EVENT_NONE) {
-            network_send_join(sock, &role);
-            joined = 1;
-        }  */
         
         if (state == GAME_PLAYER){
             input_handle(sock, &role, &game);
