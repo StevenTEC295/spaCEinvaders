@@ -3,6 +3,7 @@
 #define NOUSER
 #include <synchapi.h>
 #include "raylib.h"
+#include "include/constantes.h"
 #include "include/input.h"
 #include "include/network.h"
 #include "include/structs.h"
@@ -12,11 +13,6 @@
 #include <stdbool.h>
 #include <windows.h>
 
-// ── Configuración del control ─────────────────────────────────
-#define CONTROLLER_PORT   "COM8"
-#define CONTROLLER_BAUD   115200
-#define JOY_DEAD_ZONE     20      // margen alrededor del centro (128)
-#define JOY_CENTER  120   // ← corregido
 // Prototipos
 static bool controller_read(int *jx, bool *fire);
 static bool serial_read_line(char *buf, int max_len);
@@ -44,7 +40,7 @@ static DWORD WINAPI controller_thread(LPVOID param) {
 
 // ── Inicializar puerto serial ─────────────────────────────────
 void controller_init(void) {
-    char full_port[32];
+    char full_port[SERIAL_PORT_BUFFER_SIZE];
     snprintf(full_port, sizeof(full_port), "\\\\.\\%s", CONTROLLER_PORT);
 
     hSerial = CreateFileA(full_port, GENERIC_READ, 0, NULL,
@@ -115,7 +111,7 @@ static bool serial_read_line(char *buf, int max_len) {
 static bool controller_read(int *jx, bool *fire) {
     if (!controller_ready) return false;
 
-    char line[64];
+    char line[SERIAL_LINE_BUFFER_SIZE];
     if (!serial_read_line(line, sizeof(line))) {
         printf("[Controller] serial_read_line fallo (sin datos o timeout)\n");
         return false;
@@ -124,7 +120,7 @@ static bool controller_read(int *jx, bool *fire) {
     //printf("[Controller] Linea recibida: '%s'\n", line);  // ← ver qué llega exactamente
 
     int btn = 0, chk = 0;
-    if (sscanf(line, "JX: %d | BTN: %d | CHK: %d", jx, &btn, &chk) != 3) {
+    if (sscanf(line, SERIAL_FORMAT, jx, &btn, &chk) != 3) {
         printf("[Controller] sscanf falló en parsear\n");
         return false;
     }
@@ -149,7 +145,7 @@ void input_handle(SOCKET sock, UIEvent *role, GameState *game) {
     }
     
     // ── Control físico ────────────────────────────────────────
-    if (g_jx < 20) {
+    if (g_jx < JOY_LEFT_LIMIT) {
         
         network_send_right(sock);
         printf("Me moví a la derecha\n");
@@ -157,7 +153,7 @@ void input_handle(SOCKET sock, UIEvent *role, GameState *game) {
             
         
         
-    } else if (g_jx > 200) {
+    } else if (g_jx > JOY_RIGHT_LIMIT) {
         network_send_left(sock);
         printf("Me moví a la izquierda\n");
         Sleep(game->speed);

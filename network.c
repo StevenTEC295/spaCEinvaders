@@ -1,5 +1,6 @@
 #include "include/network.h"
 #include "include/structs.h"
+#include "include/constantes.h"
 #include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
@@ -20,7 +21,7 @@ SOCKET connect_server(const char *ip, int port) {
     struct sockaddr_in server_addr; //Dirección IPv4
 
     //Inicializa Winsock
-    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
+    if (WSAStartup(MAKEWORD(WINSOCK_VERSION_MAJOR,WINSOCK_VERSION_MINOR), &wsa) != 0) {
         printf("WSAStartup fallo\n");
         //return 1;
         return INVALID_SOCKET;
@@ -60,17 +61,17 @@ SOCKET connect_server(const char *ip, int port) {
 int network_send_join(SOCKET sock, UIEvent *role, const char *id_player)
 {
     int result;
-        char msg[128];
+        char msg[NETWORK_MSG_BUFFER_SIZE];
 
         if (*role == EVENT_JOIN_PLAYER)
         {
             snprintf(msg, sizeof(msg),
-                    "{\"type\":\"JOIN\",\"role\":\"JUGADOR\"}\n");
+                    "{\"type\":\"" MSG_TYPE_JOIN "\",\"role\":\"" ROLE_PLAYER "\"}\n");
         }
         else if (*role == EVENT_JOIN_SPECTATOR)
         {
             snprintf(msg, sizeof(msg),
-                    "{\"type\":\"JOIN\",\"role\":\"SPECTATOR\",\"watch_player\":\"%s\"}\n",
+                    "{\"type\":\"" MSG_TYPE_JOIN "\",\"role\":\"" ROLE_SPECTATOR "\",\"watch_player\":\"%s\"}\n",
                     id_player);
         }
         else
@@ -93,7 +94,7 @@ int network_send_join(SOCKET sock, UIEvent *role, const char *id_player)
 //Disparar
 void network_send_shoot(SOCKET sock)
 {
-    const char* msg = "{\"type\":\"SHOOT\"}\n";
+    const char* msg = "{\"type\":\"" MSG_TYPE_SHOOT "\"}\n";
 
     int result = send(sock, msg, strlen(msg), 0);
 
@@ -105,7 +106,7 @@ void network_send_shoot(SOCKET sock)
 //Derecha
 void network_send_right(SOCKET sock)
 {
-    const char* msg = "{\"type\":\"MOVE\",\"direction\":\"RIGHT\"}\n";
+    const char* msg = "{\"type\":\"" MSG_TYPE_MOVE "\",\"direction\":\"" DIR_RIGHT "\"}\n";
 
     int result = send(sock, msg, strlen(msg), 0);
 
@@ -117,7 +118,7 @@ void network_send_right(SOCKET sock)
 //Izquierda
 void network_send_left(SOCKET sock)
 {
-    const char* msg = "{\"type\":\"MOVE\",\"direction\":\"LEFT\"}\n";
+    const char* msg = "{\"type\":\"" MSG_TYPE_MOVE "\",\"direction\":\"" DIR_LEFT "\"}\n";
 
     int result = send(sock, msg, strlen(msg), 0);
 

@@ -66,7 +66,7 @@ void DrawBunkers(GameState* game, Assets *assets, float ScreenWidth, float Scree
         if (hp <= 0)
             continue; // bunker destruido
 
-        int index = (100 - hp) / 10;
+        int index = (BUNKER_MAX_HP - hp) / BUNKER_STAGES;
 
         if (index < 0) index = 0;
         if (index > 9) index = 9;
@@ -74,7 +74,7 @@ void DrawBunkers(GameState* game, Assets *assets, float ScreenWidth, float Scree
         //x= , y= 612
         DrawTexture(
             assets->bunkers[index],
-            ((game->bunkers[i].x)*60)+(assets->bunkers[0].width),
+            ((game->bunkers[i].x)*BUNKER_SPACING)+(assets->bunkers[0].width),
             (game->bunkers[i].y)+(ScreenHeight-(assets->player.height*4)), 
             WHITE
         );
@@ -128,7 +128,7 @@ void DrawPlayer (GameState* game, Assets *assets){
 //================================================
 void DrawScore(GameState* game){
     // Texto
-    DrawText(TextFormat("SCORE: %i", (int)game->player.score), 10, 10, 30, WHITE);
+    DrawText(TextFormat("SCORE: %i", (int)game->player.score), 10, 10, FONT_SIZE_MEDIUM, WHITE);
 }
 
 //================================================
@@ -138,10 +138,9 @@ void DrawLives(GameState* game, Assets *assets, float ScreenWidth){
     // Variables
     float x = ScreenWidth-(ScreenWidth/4);
     float y = 10;
-    float size = 70;
-    float size_y = 40;
+
     // Texto
-    DrawText(("LIVES: "), x-100, y, 30, WHITE);
+    DrawText(("LIVES: "), x-100, y, FONT_SIZE_MEDIUM, WHITE);
     
     //Dibuja las imagenes de las vidas
     for (int i = 0; i < game->player.lives; i++)
@@ -152,8 +151,8 @@ void DrawLives(GameState* game, Assets *assets, float ScreenWidth){
 
         DrawTexture(
             assets->Lives,
-            (x + (col * size))+5,
-            (y + (row * size_y))-10, 
+            (x + (col * LIFE_ICON_SIZE_X))+5,
+            (y + (row * LIFE_ICON_SIZE_Y))-10, 
             WHITE
         );
     }
@@ -180,7 +179,7 @@ void DrawWaves(GameState* game, Assets *assets, float ScreenWidth){
     }
 
     if (WaveMessage.active){
-        DrawText(TextFormat("OLEADA %i", (int)game->wave),(ScreenWidth - MeasureText(TextFormat("OLEADA %i", (int)game->wave), 30)) / 2, 100,30,YELLOW);
+        DrawText(TextFormat("OLEADA %i", (int)game->wave),(ScreenWidth - MeasureText(TextFormat("OLEADA %i", (int)game->wave), FONT_SIZE_MEDIUM)) / 2, 100,FONT_SIZE_MEDIUM,YELLOW);
     }
  
 }
@@ -193,14 +192,14 @@ void DrawViewerEntry(AppState *state, UIEvent *role,GameState *game, float Scree
     if (*state == SELECTOR) {
         ClearBackground(BLACK);
 
-        static char inputText[28 + 1] = "\0";
+        static char inputText[PLAYER_ID_MAX_LENGTH + 1] = "\0";
         static int letterCount = 0;
         static bool active = true;
 
         //Instrucciones
-        DrawText("ESCRIBE ID DE JUGADOR QUE DESEAS VER", (ScreenWidth - MeasureText("ESCRIBE ID DE JUGADOR QUE DESEAS VER", 30)) / 2, 250, 30, WHITE);
+        DrawText("ESCRIBE ID DE JUGADOR QUE DESEAS VER", (ScreenWidth - MeasureText("ESCRIBE ID DE JUGADOR QUE DESEAS VER", FONT_SIZE_MEDIUM)) / 2, 250, FONT_SIZE_MEDIUM, WHITE);
         //Input
-        Rectangle inputBox = {(ScreenWidth/2)-150, (ScreenHeight/2)-120, 300, 50};
+        Rectangle inputBox = {(ScreenWidth/2)-150, (ScreenHeight/2)-120, INPUT_WIDTH, INPUT_HEIGHT};
 
         Vector2 m = GetMousePosition();
         bool mouseOnText = CheckCollisionPointRec(m, inputBox);
@@ -214,7 +213,7 @@ void DrawViewerEntry(AppState *state, UIEvent *role,GameState *game, float Scree
 
             while (key > 0)
             {
-                if ((key >= 32) && (key <= 125) && (letterCount < 28))
+                if ((key >= ASCII_MIN) && (key <= ASCII_MAX) && (letterCount < PLAYER_ID_MAX_LENGTH))
                 {
                     inputText[letterCount] = (char)key;
                     inputText[letterCount + 1] = '\0';
@@ -235,13 +234,13 @@ void DrawViewerEntry(AppState *state, UIEvent *role,GameState *game, float Scree
         }
         DrawRectangleRec(inputBox, DARKGRAY);
         DrawRectangleLines(inputBox.x, inputBox.y, inputBox.width, inputBox.height, WHITE);
-        DrawText(inputText, inputBox.x + 10, inputBox.y + 15, 20, RAYWHITE);
+        DrawText(inputText, inputBox.x + 10, inputBox.y + 15, FONT_SIZE_NORMAL, RAYWHITE);
 
         
         //Boton de enviar
-        Rectangle btn1 = {(ScreenWidth/2)-100, (ScreenHeight/2)-70, 200, 60};
+        Rectangle btn1 = {(ScreenWidth/2)-MENU_BUTTON_SPACING, (ScreenHeight/2)-MENU_BUTTON_OFFSET_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
         DrawRectangleRec(btn1, DARKBLUE);
-        DrawText("ENVIAR", (ScreenWidth/2)-45, (ScreenHeight/2)-50, 20, WHITE);
+        DrawText("ENVIAR", (ScreenWidth/2)-45, (ScreenHeight/2)-50, FONT_SIZE_NORMAL, WHITE);
 
         
         if (CheckCollisionPointRec(m, btn1) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -255,10 +254,6 @@ void DrawViewerEntry(AppState *state, UIEvent *role,GameState *game, float Scree
                 *state = SELECTOR;
                 DrawText("ID DE JUGADOR INVALIDO", (ScreenWidth - MeasureText("ID DE JUGADOR INVALIDO", 10)) / 2, 450, 10, WHITE);
             }
-            //printf("ID jugador ingresado: %s\n", inputText);
-            //*role = EVENT_JOIN_SPECTATOR;
-            //*state = GAME_SPECTATOR;
-            //network_send_join(sock, role); 
         }
     }
     
@@ -273,20 +268,20 @@ void DrawMenu(AppState *state, UIEvent *role, float ScreenWidth, float ScreenHei
 
         ClearBackground(BLACK);
 
-        DrawText("SELECCIONA MODO", (ScreenWidth/2)-135, 250, 30, WHITE);
+        DrawText("SELECCIONA MODO", (ScreenWidth/2)-135, 250, FONT_SIZE_MEDIUM, WHITE);
         
         // +60 +100
-        Rectangle btn1 = {(ScreenWidth/2)-100, (ScreenHeight/2)-70, 200, 60};
+        Rectangle btn1 = {(ScreenWidth/2)-100, (ScreenHeight/2)-70, BUTTON_WIDTH, BUTTON_HEIGHT};
         // = +100 del 1
-        Rectangle btn2 = {(ScreenWidth/2)-100, (ScreenHeight/2)+30, 200, 60};
+        Rectangle btn2 = {(ScreenWidth/2)-100, (ScreenHeight/2)+30, BUTTON_WIDTH, BUTTON_HEIGHT};
 
         //+50 +20 del boton 1
         DrawRectangleRec(btn1, DARKBLUE);
-        DrawText("JUGADOR", (ScreenWidth/2)-45, (ScreenHeight/2)-50, 20, WHITE);
+        DrawText("JUGADOR", (ScreenWidth/2)-45, (ScreenHeight/2)-50, FONT_SIZE_NORMAL, WHITE);
 
         //+30 +20 del boton 2
         DrawRectangleRec(btn2, DARKGRAY);
-        DrawText("ESPECTADOR", (ScreenWidth/2)-65, (ScreenHeight/2)+50, 20, WHITE);
+        DrawText("ESPECTADOR", (ScreenWidth/2)-65, (ScreenHeight/2)+50, FONT_SIZE_NORMAL, WHITE);
 
         Vector2 m = GetMousePosition();
 
@@ -323,7 +318,7 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
         case GAME_PLAYER:
             if (strcmp(game->game_status,"GAME_OVER") != 0) {
                 ClearBackground(BLACK);
-                DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, 20, WHITE);
+                DrawText("MODO JUGADOR", (ScreenWidth/2)-50, 0, FONT_SIZE_NORMAL, WHITE);
                 DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
                 DrawAliens(game->aliens, frame_time, assets);
                 DrawUFO(game, assets);
@@ -339,16 +334,16 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
 
         case GAME_OVER:
             ClearBackground(DARKBLUE);
-            DrawText("GAME OVER", (ScreenWidth - MeasureText("GAME OVER", 40))/2, 300, 40, RED);
-            DrawText(game->gameOver.reason, (ScreenWidth - MeasureText(game->gameOver.reason, 20))/2, 360, 20, WHITE);
+            DrawText("GAME OVER", (ScreenWidth - MeasureText("GAME OVER", FONT_SIZE_GAMEOVER))/2, 300, FONT_SIZE_GAMEOVER, RED);
+            DrawText(game->gameOver.reason, (ScreenWidth - MeasureText(game->gameOver.reason, FONT_SIZE_NORMAL))/2, 360, FONT_SIZE_NORMAL, WHITE);
             char scoreText[64];
             sprintf(scoreText, "Score: %d", game->gameOver.final_score);
-            DrawText(scoreText, (ScreenWidth - MeasureText(scoreText, 20))/2, 400, 20, WHITE);
+            DrawText(scoreText, (ScreenWidth - MeasureText(scoreText, FONT_SIZE_NORMAL))/2, 400, FONT_SIZE_NORMAL, WHITE);
             break;
 
         case GAME_SPECTATOR:
             ClearBackground(DARKBLUE);
-            DrawText("MODO ESPECTADOR", (ScreenWidth - MeasureText("MODO ESPECTADOR", 20)) / 2, 20, 20, WHITE);
+            DrawText("MODO ESPECTADOR", (ScreenWidth - MeasureText("MODO ESPECTADOR", FONT_SIZE_NORMAL)) / 2, 20, FONT_SIZE_NORMAL, WHITE);
             DrawBunkers(game, assets, ScreenWidth, ScreenHeight);
             DrawAliens(game->aliens, frame_time, assets);
             DrawUFO(game, assets);
@@ -359,7 +354,6 @@ void DrawGame(AppState *state, UIEvent *role, GameState *game, Assets *assets, f
             break;
     }
 
-    
 
     EndDrawing();
     

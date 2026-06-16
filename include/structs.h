@@ -2,6 +2,8 @@
 #define STRUCTS_H
 
 #include <stdbool.h>
+
+
 // ---------------- PLAYER ----------------
 typedef struct {
     char player_id[10], role[10];

@@ -16,14 +16,6 @@
 #include "include/constantes.h"
 #include "include/input.h"
 
-//"127.0.0.1" prueba JAVA "192.168.100.56"
-#define SERVER_IP "192.168.1.86"
-//#define SERVER_IP "192.168.1.155"
-#define SERVER_PORT 8080
-#define BUFFER_SIZE 10000
-#define SCREEN_WIDTH 1200
-#define SCREEN_HEIGHT 900
-
 volatile int running = 1;
 
 //Buffer compartido
@@ -47,18 +39,17 @@ DWORD WINAPI network_thread (LPVOID arg){
 
         if (bytes > 0) {
             //===Imprimir lo recibido por el server======
-            buffer[bytes] = '\0';
-            printf("MENSAJE SERVER:\n%s\n", buffer);
+            //buffer[bytes] = '\0';
+            //printf("MENSAJE SERVER:\n%s\n", buffer);
             
             //===Bloquear buffer a este hilo hasta que termine de copiar===
             EnterCriticalSection(&cs);
             // Sobrescribe el estado al más nuevo
-
-            //strcpy(data.buffer, buffer);
             strncpy(data.buffer, buffer, sizeof(data.buffer) - 1);
             data.buffer[sizeof(data.buffer) - 1] = '\0';
 
             data.has_new_data = 1;
+            
             //Dejar de bloquear
             LeaveCriticalSection(&cs);
             
