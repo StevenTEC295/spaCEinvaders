@@ -5,7 +5,7 @@
 
 //Constantes de conexión y crear pantalla
 //"127.0.0.1" prueba JAVA "192.168.100.56"
-#define SERVER_IP "192.168.1.86"
+#define SERVER_IP "172.20.10.2"
 //#define SERVER_IP "192.168.1.155"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 10000
