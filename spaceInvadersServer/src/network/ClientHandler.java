@@ -49,8 +49,12 @@ public class ClientHandler extends Thread implements JuegoObserver{
         }catch (IOException e){
                     System.out.println("Cliente desconectado: " + jugadorID);}
             finally{
-                    if (engine != null) engine.detener(); engine.removeObserver((JuegoObserver) this);
-                        try {socket.close();}catch (IOException ignored){}
+                    if (engine != null && role.equals("JUGADOR")){
+                     engine.detener();
+                        System.out.println("Cerrando Engine...");
+                    } 
+                    engine.removeObserver((JuegoObserver) this);
+                    try {socket.close();}catch (IOException ignored){}
                         }
     
     
